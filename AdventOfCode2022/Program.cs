@@ -1,0 +1,87 @@
+﻿using System.IO;
+using System.Text;
+
+namespace AdventOfCode2022;
+internal class Program
+{
+    static void UnitTests(IDay day, int part)
+    {
+        Console.WriteLine();
+        var tests = (part == 1) ? day.UnitTestsP1 : day.UnitTestsP2;
+
+        foreach (string testI in tests.Keys)
+        {
+            Console.ForegroundColor = ConsoleColor.White;
+            string testO = (part == 1) ? day.SolvePart1(testI) : day.SolvePart2(testI);
+
+            Console.WriteLine($"Input: {testI}");
+            Console.WriteLine($"Output: {testO}");
+
+            if (testO == tests[testI])
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("Success!");
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Failure!");
+                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.WriteLine($"Expected Output: {tests[testI]}");
+            }
+        }
+    }
+    static bool BinaryChoice(char opt1, char opt2)
+    {
+        // waits for a valid choice, returns true for opt1, false for opt2
+        Console.ForegroundColor = ConsoleColor.Yellow;
+
+        bool? choice = null;
+        while (!choice.HasValue)
+        {
+            char key = Console.ReadKey(true).KeyChar.ToString().ToUpper()[0];
+
+            if (key == opt1) { choice = true; Console.WriteLine(opt1); }
+            else if (key == opt2) { choice = false; Console.WriteLine(opt2); }
+        }
+
+        Console.ForegroundColor = ConsoleColor.Gray;
+        return choice.Value;
+    }
+    static void Main(string[] args)
+    {
+        if (args.Contains("init"))
+        {
+            CreateFiles.InitialiseRepo();
+            Environment.Exit(0);
+        }
+
+        string startupPath = Directory.GetParent(Directory.GetCurrentDirectory())!.Parent!.Parent!.Parent!.FullName;
+
+        IDay day = Day.GetDay();
+        Console.Write("Solve for part 1 or 2? ");
+        int part = BinaryChoice('1', '2') ? 1 : 2;
+        Console.Write("Run Test Inputs? ");
+        if (BinaryChoice('Y', 'N')) { UnitTests(day, part); }
+
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine($"\nDay {day.Day}");
+
+        string input = File.ReadAllText(Path.Combine(startupPath, @$"Inputs\day{day.Day}.txt"));
+        string output = (part == 1) ? day.SolvePart1(input) : day.SolvePart2(input);
+
+        Console.ForegroundColor = ConsoleColor.White;
+        Console.WriteLine($"Input: {input}");
+        Console.WriteLine($"Output: {output}");
+
+        string outputLocation = Path.Combine(startupPath, @$"Outputs\day{day.Day}.txt");
+
+        using StreamWriter sr = new(new FileStream(outputLocation, FileMode.Create), Encoding.UTF8);
+        sr.Write(output);
+
+        Console.ForegroundColor = ConsoleColor.DarkGray;
+        Console.WriteLine(@$"The output has also been written to {outputLocation}");
+
+        Console.ReadKey();
+    }
+}
