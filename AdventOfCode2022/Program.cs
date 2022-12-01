@@ -14,7 +14,7 @@ internal class Program
             Console.ForegroundColor = ConsoleColor.White;
             string testO = (part == 1) ? day.SolvePart1(testI) : day.SolvePart2(testI);
 
-            Console.WriteLine($"Input: {testI}");
+            //Console.WriteLine($"Input: {testI}");
             Console.WriteLine($"Output: {testO}");
 
             if (testO == tests[testI])
@@ -64,14 +64,15 @@ internal class Program
         Console.Write("Run Test Inputs? ");
         if (BinaryChoice('Y', 'N')) { UnitTests(day, part); }
 
+        
         Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine($"\nDay {day.Day}");
+        Console.WriteLine($"\nDay {day.Day} Part {part}");
 
         string input = File.ReadAllText(Path.Combine(startupPath, @$"Inputs\day{day.Day}.txt"));
         string output = (part == 1) ? day.SolvePart1(input) : day.SolvePart2(input);
 
         Console.ForegroundColor = ConsoleColor.White;
-        Console.WriteLine($"Input: {input}");
+        //Console.WriteLine($"Input: {input}");
         Console.WriteLine($"Output: {output}");
 
         string outputLocation = Path.Combine(startupPath, @$"Outputs\day{day.Day}.txt");
@@ -81,7 +82,7 @@ internal class Program
 
         Console.ForegroundColor = ConsoleColor.DarkGray;
         Console.WriteLine(@$"The output has also been written to {outputLocation}");
-
+        
         Console.ReadKey();
     }
 }
