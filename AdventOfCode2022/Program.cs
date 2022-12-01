@@ -6,7 +6,6 @@ internal class Program
 {
     static void UnitTests(IDay day, int part)
     {
-        Console.WriteLine();
         var tests = (part == 1) ? day.UnitTestsP1 : day.UnitTestsP2;
 
         foreach (string testI in tests.Keys)
@@ -50,21 +49,31 @@ internal class Program
     }
     static void Main(string[] args)
     {
+        string startupPath = Directory.GetParent(Directory.GetCurrentDirectory())!.Parent!.Parent!.Parent!.FullName;
+        IDay day;
+        int part;
+
         if (args.Contains("init"))
         {
             CreateFiles.InitialiseRepo();
             Environment.Exit(0);
+            return;
+        }
+        else if (args.Length == 3)
+        {
+            day = Day.TryGetDay(args[0]) ?? throw new ArgumentNullException("Invalid number of days");
+            if (!int.TryParse(args[1].Trim(' '), out part) || !(part == 1 || part == 2)) { throw new ArgumentNullException("Invalid part number"); }
+            if (args[2] == "1") { UnitTests(day, part); }
+        }
+        else
+        {
+            day = Day.GetUserDay();
+            Console.Write("Solve for part 1 or 2? ");
+            part = BinaryChoice('1', '2') ? 1 : 2;
+            Console.Write("Run Test Inputs? ");
+            if (BinaryChoice('Y', 'N')) { Console.WriteLine(); UnitTests(day, part); }
         }
 
-        string startupPath = Directory.GetParent(Directory.GetCurrentDirectory())!.Parent!.Parent!.Parent!.FullName;
-
-        IDay day = Day.GetDay();
-        Console.Write("Solve for part 1 or 2? ");
-        int part = BinaryChoice('1', '2') ? 1 : 2;
-        Console.Write("Run Test Inputs? ");
-        if (BinaryChoice('Y', 'N')) { UnitTests(day, part); }
-
-        
         Console.ForegroundColor = ConsoleColor.Yellow;
         Console.WriteLine($"\nDay {day.Day} Part {part}");
 

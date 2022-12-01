@@ -12,7 +12,7 @@ public interface IDay
 }
 class Day
 {
-    public static IDay GetDay()
+    public static IDay GetUserDay()
     {
         IDay? day = null;
         while (day == null)
@@ -22,13 +22,19 @@ class Day
             Console.ForegroundColor = ConsoleColor.Yellow;
             string dayStr = Console.ReadLine() ?? "1";
 
-            var allDays = typeof(IDay).Assembly.GetTypes().Where(t => typeof(IDay).IsAssignableFrom(t)).Where(t => t != typeof(IDay));
-            var lookup = allDays.ToDictionary(d => d.Name[3..]);
-
-            if (lookup.TryGetValue(dayStr, out Type? value))
-                day = (IDay?)Activator.CreateInstance(value);
+            day = TryGetDay(dayStr);
         }
         Console.ForegroundColor = ConsoleColor.Gray;
         return day;
+    }
+
+    public static IDay? TryGetDay(string dayStr)
+    {
+        var allDays = typeof(IDay).Assembly.GetTypes().Where(t => typeof(IDay).IsAssignableFrom(t)).Where(t => t != typeof(IDay));
+        var lookup = allDays.ToDictionary(d => d.Name[3..]);
+
+        if (lookup.TryGetValue(dayStr, out Type? value))
+            return (IDay?)Activator.CreateInstance(value);
+        return null;
     }
 }

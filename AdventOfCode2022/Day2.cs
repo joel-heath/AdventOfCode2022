@@ -11,22 +11,25 @@ internal class Day2 : IDay
     public int Day => 2;
     public Dictionary<string, string> UnitTestsP1 => new()
     {
-        { "TestInput", "Output" },
-        { "Input2", "Output" },
+        { "hello", "Output" },
     };
     public Dictionary<string, string> UnitTestsP2 => new()
     {
         { "TestInput", "Output" },
-        { "Input2", "Output" },
     };
 
     public string SolvePart1(string input)
     {
-        return string.Empty;
+
+
+
+        return $"{UnitTestsP1}";
     }
 
     public string SolvePart2(string input)
     {
-        return string.Empty;
+
+
+        return $"{UnitTestsP2}";
     }
 }
