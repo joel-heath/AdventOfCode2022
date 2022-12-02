@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace AdventOfCode2022;
 internal class Day3 : IDay
@@ -22,6 +23,15 @@ internal class Day3 : IDay
 
     public string SolvePart1(string input)
     {
+        string[] lines = input.Split("\r\n");
+
+        for (int i = 0; i < lines.Length; i++)
+        {
+            string[] words = lines[i].Split(" ").Select(s => s.Trim(' ')).ToArray();
+        }
+
+
+
         return string.Empty;
     }
 
