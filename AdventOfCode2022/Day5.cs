@@ -54,7 +54,7 @@ internal class Day5 : IDay
         string[] lines = input.Split("\r\n");
 
         Dictionary<string, int> result = new();
-        //int count = 0;
+        int count = 0;
 
         for (int i = 0; i < lines.Length; i++)
         {

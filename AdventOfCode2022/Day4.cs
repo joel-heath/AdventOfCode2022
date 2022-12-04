@@ -22,9 +22,9 @@ internal class Day4 : IDay
 
     public string SolvePart1(string input)
     => $"{input.Split("\r\n").Select(l => l.Split(",")
-                .Select(s => s.Split("-").Select(int.Parse).ToArray()).ToArray()).ToArray()
-                .Select(l => ((l[1][1] >= l[0][1] && l[1][0] <= l[0][0]) || (l[0][1] >= l[1][1] && l[0][0] <= l[1][0]) ? 1 : 0)).Sum()}";
-
+                .Select(s => s.Split("-").Select(int.Parse).ToArray()).OrderBy(l => l[0]).ThenByDescending(l => l[1]).ToArray()).ToArray()
+                .Select(l => ((l[0][1] >= l[1][1] && l[0][0] <= l[1][0]) ? 1 : 0)).Sum()}";
+    
     public string SolvePart2(string input)
     => $"{input.Split("\r\n").Select(l => l.Split(",")
             .Select(s => s.Split("-").Select(int.Parse).ToArray())
