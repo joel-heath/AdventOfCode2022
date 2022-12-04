@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Threading.Tasks;
+using System.Runtime.Serialization.Formatters;
 
 namespace AdventOfCode2022;
 internal class Day6 : IDay
@@ -20,9 +21,18 @@ internal class Day6 : IDay
         { "Input2", "Output" },
     };
 
+
+  
+
     public string SolvePart1(string input)
     {
-        return string.Empty;
+        
+
+
+
+
+
+        return $"{string.Empty}";
     }
 
     public string SolvePart2(string input)

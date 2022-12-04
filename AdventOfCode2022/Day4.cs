@@ -13,11 +13,11 @@ internal class Day4 : IDay
     public int Day => 4;
     public Dictionary<string, string> UnitTestsP1 => new()
     {
-        { "TestInput", "Output" }
+        { "2-4,6-8\r\n2-3,4-5\r\n5-7,7-9\r\n2-8,3-7\r\n6-6,4-6\r\n2-6,4-8", "2" }
     };
     public Dictionary<string, string> UnitTestsP2 => new()
     {
-        { "TestInput", "Output" }
+        { "2-4,6-8\r\n2-3,4-5\r\n5-7,7-9\r\n2-8,3-7\r\n6-6,4-6\r\n2-6,4-8", "4" }
     };
 
     static void AddToDict<TKey>(Dictionary<TKey,int> dict, TKey key, int value)
@@ -46,85 +46,61 @@ internal class Day4 : IDay
     static string[] GetMatches(string input, string regex)
     {
         return new Regex(regex, RegexOptions.IgnoreCase).Matches(input).Skip(1).Select(m => m.Value).ToArray();
-
-        /*
-        Regex r = new(regex, RegexOptions.IgnoreCase);
-        MatchCollection matches = r.Matches(input);
-        string[] result = matches.Skip(1).Select(m => m.Value).ToArray();
-        string[] result = new string[matches.Count - 1];
-
-        foreach (Match m in matches.Cast<Match>())
-        {
-            GroupCollection g = m.Groups;
-
-            //g[0] is the overarching capture of the whole thing
-            // skip it with index at 1
-
-            for (int gi = 1; gi < g.Count; gi++)
-            {
-                result[gi-1] = g[gi].Value;
-            }
-        }
-
-        return result;
-        */
     }
 
 
     public string SolvePart1(string input)
     {
         string[] lines = input.Split("\r\n");
-
-        Dictionary<string, int> result = new();
-        //int count = 0;
+        int count = 0;
 
         for (int i = 0; i < lines.Length; i++)
         {
-            string[] words = lines[i].Split(" ").Select(s => s.Trim(' ')).ToArray();
+            string[] ranges = lines[i].Split(",");
+            int[] range1 = ranges[0].Split("-").Select(int.Parse).ToArray();
+            int[] range2 = ranges[1].Split("-").Select(int.Parse).ToArray();
 
-
-
-            for (int j = 0; j < words.Length; j++)
+            if ((range2[1] >= range1[1] && range2[0] <= range1[0]) || (range1[1] >= range2[1] && range1[0] <= range2[0]))
             {
-                string word = words[j];
-                if (word == "") continue;
-
-
-            }
-        }
-
-
-
-        // OR REGEX ROUTE
-        Regex r = new("(\\d+),(\\d+) => (\\d+),(\\d+)", RegexOptions.IgnoreCase);
-        MatchCollection matches = r.Matches(input);
-
-        foreach (Match m in matches)
-        {
-            GroupCollection g = m.Groups;
-
-            //g[0] is the overarching capture of the whole thing
-            // skip it with index at 1
-            for (int gi = 1; gi < g.Count; gi++)
-            {
-                Console.Write($"{g[gi].Value} ");
+                count++;
             }
 
-            Console.WriteLine();
         }
 
+        return $"{count}";
 
-
-        return $"{string.Empty}";
     }
 
     public string SolvePart2(string input)
     {
+        string[] lines = input.Split("\r\n");
 
+        int count = 0;
 
+        for (int i = 0; i < lines.Length; i++)
+        {
+            string[] ranges = lines[i].Split(",");
+            int[] bounds1 = ranges[0].Split("-").Select(int.Parse).ToArray();
+            int[] bounds2 = ranges[1].Split("-").Select(int.Parse).ToArray();
 
+            int[] range1 = new int[bounds1[1] - bounds1[0] + 1];
+            int[] range2 = new int[bounds2[1] - bounds2[0] + 1];
 
+            for (int j = bounds1[0]; j <= bounds1[1]; j++)
+            {
+                
+                range1[j - bounds1[0]] = j;
+            }
 
-        return $"{string.Empty}";
+            for (int j = bounds2[0]; j <= bounds2[1]; j++)
+            {
+                range2[j - bounds2[0]] = j;
+            }
+
+            if (range1.Intersect(range2).ToArray().Length > 0) count++;
+
+        }
+
+        return $"{count}";
     }
 }

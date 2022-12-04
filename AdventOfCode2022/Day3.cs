@@ -24,33 +24,4 @@ internal class Day3 : IDay
 
     public string SolvePart2(string input)
     => $"{input.Split("\r\n").Chunk(3).Select(line => line[0].Where(ch => line[1].Contains(ch) && line[2].Contains(ch)).Select(l => l > 91 ? l - 96 : l - 38).First()).Sum()}";
-
-
-    /*
-
-    string[] lines = input.Split("\r\n");
-        int total = 0;
-
-        for (int i = 0; i < lines.Length; i += 3)
-        {   
-            string a = lines[i];
-            string b = lines[i+1];
-            string c = lines[i+2];
-
-            char key = 'a';
-            foreach (char letter in a)
-            {
-                if (b.Contains(letter) && c.Contains(letter)) { key = letter; break; }
-            }
-
-            if (key > 91) total += key - 96;
-            else total += key - 38;
-        }
-
-
-
-        return $"{total}";
-
-    }
-    */
 }
