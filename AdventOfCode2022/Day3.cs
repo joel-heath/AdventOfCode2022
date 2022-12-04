@@ -20,7 +20,7 @@ internal class Day3 : IDay
     };
 
     public string SolvePart1(string input)
-    => $"{input.Split("\r\n").Select(line => (line[..(line.Length / 2)].Intersect(line[(line.Length / 2)..])).Select(l => l > 91 ? l - 96 : l - 38).First()).Sum()}";
+    => $"{input.Split("\r\n").Select(line => line[..(line.Length / 2)].Intersect(line[(line.Length / 2)..]).Select(l => l > 91 ? l - 96 : l - 38).First()).Sum()}";
 
     public string SolvePart2(string input)
     => $"{input.Split("\r\n").Chunk(3).Select(line => line[0].Intersect(line[1].Intersect(line[2])).Select(l => l > 91 ? l - 96 : l - 38).First()).Sum()}";

@@ -18,6 +18,7 @@ internal class Day1 : IDay
         { "1000\r\n2000\r\n3000\r\n\r\n4000\r\n\r\n5000\r\n6000\r\n\r\n7000\r\n8000\r\n9000\r\n\r\n10000", "45000" },
     };
 
-    public string SolvePart1(string input) => $"{input.Split("\r\n\r\n").Select(e => e.Split("\r\n").Select(int.Parse).ToList().Sum()).OrderDescending().ToArray()[0]}";
-    public string SolvePart2(string input) => $"{input.Split("\r\n\r\n").Select(e => e.Split("\r\n").Select(int.Parse).ToList().Sum()).OrderDescending().Take(3).Sum()}";
+    public string SolvePart1(string input) => $"{input.Split("\r\n\r\n").Select(e => e.Split("\r\n").Select(int.Parse).Sum()).OrderDescending().First()}";
+
+    public string SolvePart2(string input) => $"{input.Split("\r\n\r\n").Select(e => e.Split("\r\n").Select(int.Parse).Sum()).OrderDescending().Take(3).Sum()}";
 }
