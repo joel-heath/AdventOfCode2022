@@ -48,7 +48,6 @@ internal class Day5 : IDay
     }
 
 
-
     public string SolvePart1(string input)
     {
         string[] lines = input.Split("\r\n");

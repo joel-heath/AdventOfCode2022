@@ -25,10 +25,10 @@ internal class Day4 : IDay
         .Select(s => s.Split("-").Select(int.Parse).ToArray())
         .OrderBy(l => l[0]).ThenByDescending(l => l[1]).ToArray())
         .Where(l => l[0][1] >= l[1][1] && l[0][0] <= l[1][0]).Count()}";
-    
+
     public string SolvePart2(string input)
     => $"{input.Split("\r\n").Select(l => l.Split(",")
         .Select(s => s.Split("-").Select(int.Parse).ToArray())
-        .Select(s => Enumerable.Range(s[0], s[1] - s[0] + 1)).ToArray())
-        .Where(l => l[0].Intersect(l[1]).Any()).Count()}";
+        .OrderBy(l => l[0]).ThenByDescending(l => l[1]).ToArray())
+        .Where(l => l[0][1] >= l[1][0]).Count()}";
 }
