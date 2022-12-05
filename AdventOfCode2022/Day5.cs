@@ -7,6 +7,25 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 
 namespace AdventOfCode2022;
+
+static class MyExtensions
+{
+    public static T[][] Rotate<T>(this T[][] matrix)
+    {
+        int n = matrix.GetLength(0);
+        T[][] ret = new T[n][].Select(i => new T[n]).ToArray();
+
+        for (int i = 0; i < n; ++i)
+        {
+            for (int j = 0; j < n; ++j)
+            {
+                ret[i][j] = matrix[n - j - 1][i];
+            }
+        }
+
+        return ret;
+    }
+}
 internal partial class Day5 : IDay
 {
     public int Day => 5;
@@ -21,34 +40,14 @@ internal partial class Day5 : IDay
 
     static (Stack<char>[], int) ParseInput(string[] lines)
     {
-        int intialCrates = -1;
-        for (int i = 0; i < lines.Length && intialCrates == -1; i++)
-        {
-            if (lines[i].Length < 2 || lines[i][0] == '[') continue;
-            if (lines[i][1] == '1') intialCrates = i;
-        }
+        int initialCrates = lines.Where(l => l.Length != 0 && l[0] != 'm').Count() - 1;
+        int crateCount = lines[initialCrates].Where(c => c != '[' && c != ' ' && c != ']').Count();
+        Stack<char>[] crates = Enumerable.Repeat(new string(' ', lines[0].Length), crateCount - initialCrates).Concat(lines).Reverse().Skip(lines.Length - initialCrates)
+            .Select(l => l.Where((_, i) => (i - 1) % 4 == 0).ToArray()).ToArray()
+            .Rotate().Select(r => new Stack<char>(r.Reverse().Where(c => c != ' '))).ToArray();
 
-        int crateCount = 0;
-        for (int i = 0; i < lines[intialCrates].Length; i++)
-        {
-            char c = lines[intialCrates][i];
-            if (c != '[' && c != ' ' && c != ']') crateCount++;
-        }
 
-        Stack<char>[] crates = new Stack<char>[crateCount].Select(s => new Stack<char>()).ToArray();
-
-        for (int i = intialCrates - 1; i >= 0; i--)
-        {
-            string line = lines[i];
-
-            for (int j = 0, k = 1; j < crateCount; j++, k += 4)
-            {
-                if (line[k] == ' ') continue;
-                crates[j].Push(line[k]);
-            }
-        }
-
-        return (crates, intialCrates+2);
+        return (crates, initialCrates + 2);
     }
 
     public string SolvePart1(string input)
@@ -64,7 +63,6 @@ internal partial class Day5 : IDay
 
         return new string(crates.Select(s => s.Peek()).ToArray());
     }
-
     public string SolvePart2(string input)
     {
         string[] lines = input.Split("\r\n");
