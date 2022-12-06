@@ -30,8 +30,8 @@ internal class Day6 : IDay
     };
 
     public string SolvePart1(string input)
-        => $"{Enumerable.Range(4, input.Length).Where(i => Enumerable.Range(0, 4).Select(j => input[i - j]).Distinct().Count() == 4).First() + 1}";
+        => $"{Enumerable.Range(4, input.Length).Where(i => input[(i - 4)..i].Distinct().Count() == 4).First()}";
 
     public string SolvePart2(string input)
-        => $"{Enumerable.Range(14, input.Length).Where(i => Enumerable.Range(0, 14).Select(j => input[i - j]).Distinct().Count() == 14).First() + 1}";
+        => $"{Enumerable.Range(14, input.Length).Where(i => input[(i-14)..i].Distinct().Count() == 14).First()}";
 }

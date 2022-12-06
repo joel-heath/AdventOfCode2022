@@ -11,13 +11,11 @@ internal class Day7 : IDay
     public int Day => 7;
     public Dictionary<string, string> UnitTestsP1 => new()
     {
-        { "TestInput", "Output" },
-        { "Input2", "Output" },
+        { "TestInput", "Output" }
     };
     public Dictionary<string, string> UnitTestsP2 => new()
     {
-        { "TestInput", "Output" },
-        { "Input2", "Output" },
+        { "TestInput", "Output" }
     };
 
     static void AddToDict<TKey>(Dictionary<TKey, int> dict, TKey key, int value)
@@ -74,7 +72,7 @@ internal class Day7 : IDay
 
         int[] items = new int[15].Select(s => 5).ToArray();
 
-        Dictionary<string, int> result = new Dictionary<string, int>();
+        var result = new Dictionary<string, int>();
         int count = 0;
 
         for (int i = 0; i < lines.Length; i++)
