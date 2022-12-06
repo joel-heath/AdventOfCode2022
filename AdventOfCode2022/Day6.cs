@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Runtime.Serialization.Formatters;
 using System.Text.RegularExpressions;
+using System.Collections;
 
 namespace AdventOfCode2022;
 internal class Day6 : IDay
@@ -13,75 +14,54 @@ internal class Day6 : IDay
     public int Day => 6;
     public Dictionary<string, string> UnitTestsP1 => new()
     {
-        { "TestInput", "Output" },
-        { "Input2", "Output" },
+        { "mjqjpqmgbljsphdztnvjfqwrcgsmlb", "7" },
+        { "bvwbjplbgvbhsrlpgdmjqwftvncz", "5" },
+        { "nppdvjthqldpwncqszvftbrmjlhg", "6" },
+        { "nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg", "10" },
+        { "zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw", "11" }
     };
     public Dictionary<string, string> UnitTestsP2 => new()
     {
-        { "TestInput", "Output" },
-        { "Input2", "Output" },
+        { "mjqjpqmgbljsphdztnvjfqwrcgsmlb", "19" },
+        { "bvwbjplbgvbhsrlpgdmjqwftvncz", "23" },
+        { "nppdvjthqldpwncqszvftbrmjlhg", "23" },
+        { "nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg", "29" },
+        { "zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw", "26" }
     };
-
-    static void AddToDict<TKey>(Dictionary<TKey, int> dict, TKey key, int value)
-    {
-        if (dict.TryGetValue(key, out int oldValue))
-        {
-            dict[key] = oldValue + value;
-        }
-        else
-        {
-            dict[key] = value;
-        }
-    }
-    static void AddToDict<TKey>(Dictionary<TKey, string> dict, TKey key, string value)
-    {
-        if (dict.TryGetValue(key, out string? oldValue))
-        {
-            dict[key] = oldValue + value;
-        }
-        else
-        {
-            dict[key] = value;
-        }
-    }
-
-    static string[] GetMatches(string input, string regex)
-    {
-        return new Regex(regex, RegexOptions.IgnoreCase).Matches(input).Skip(1).Select(m => m.Value).ToArray();
-    }
-
 
     public string SolvePart1(string input)
     {
-        string[] lines = input.Split("\r\n");
+        Queue<char> recents = new (Enumerable.Range(0, 4).Select(i => input[i]));
 
-        Dictionary<string, int> result = new Dictionary<string, int>();
-        int count = 0;
-
-        for (int i = 0; i < lines.Length; i++)
+        for (int j = 4; j < input.Length; j++)
         {
-            string[] words = lines[i].Split(" ").Select(s => s.Trim(' ')).ToArray();
+            recents.Enqueue(input[j]);
+            recents.Dequeue();
 
-
-
-            for (int j = 0; j < words.Length; j++)
+            if (recents.Distinct().Count() == 4)
             {
-                string word = words[j];
-                if (word == "") continue;
-
-
+                return $"{j + 1}";
             }
         }
 
-
-
-
-
-        return $"{string.Empty}";
+        return "Marker not found";
     }
 
     public string SolvePart2(string input)
     {
-        return string.Empty;
+        Queue<char> recents = new (Enumerable.Range(0, 14).Select(i => input[i]));
+
+        for (int j = 14; j < input.Length; j++)
+        {
+            recents.Enqueue(input[j]);
+            recents.Dequeue();
+
+            if (recents.Distinct().Count() == 14)
+            {
+                return $"{j + 1}";
+            }
+        }
+
+        return "Marker not found";
     }
 }

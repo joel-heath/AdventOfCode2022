@@ -46,7 +46,6 @@ internal partial class Day5 : IDay
             .Select(l => l.Where((_, i) => (i - 1) % 4 == 0).ToArray()).ToArray()
             .Rotate().Select(r => new Stack<char>(r.Reverse().Where(c => c != ' '))).ToArray();
 
-
         return (crates, initialCrates + 2);
     }
 
