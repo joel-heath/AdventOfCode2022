@@ -30,38 +30,8 @@ internal class Day6 : IDay
     };
 
     public string SolvePart1(string input)
-    {
-        Queue<char> recents = new (Enumerable.Range(0, 4).Select(i => input[i]));
-
-        for (int j = 4; j < input.Length; j++)
-        {
-            recents.Enqueue(input[j]);
-            recents.Dequeue();
-
-            if (recents.Distinct().Count() == 4)
-            {
-                return $"{j + 1}";
-            }
-        }
-
-        return "Marker not found";
-    }
+        => $"{Enumerable.Range(4, input.Length).Where(i => Enumerable.Range(0, 4).Select(j => input[i - j]).Distinct().Count() == 4).First() + 1}";
 
     public string SolvePart2(string input)
-    {
-        Queue<char> recents = new (Enumerable.Range(0, 14).Select(i => input[i]));
-
-        for (int j = 14; j < input.Length; j++)
-        {
-            recents.Enqueue(input[j]);
-            recents.Dequeue();
-
-            if (recents.Distinct().Count() == 14)
-            {
-                return $"{j + 1}";
-            }
-        }
-
-        return "Marker not found";
-    }
+        => $"{Enumerable.Range(14, input.Length).Where(i => Enumerable.Range(0, 14).Select(j => input[i - j]).Distinct().Count() == 14).First() + 1}";
 }
