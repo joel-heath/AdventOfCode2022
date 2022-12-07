@@ -24,11 +24,11 @@ internal partial class Day7 : IDay
     {
         public Folder? Parent { get; }
         public string Name { get; }
-        private List<File> Files { get; }
+        public List<File> Files { get; set; }
         public void AddFile(string fileName, long size)
         => Files.Add(new File(fileName, size));
 
-        private List<Folder> Children { get; }
+        public List<Folder> Children { get; set; }
         public Folder AddChild(string folderName)
         {
             Folder newFolder = new(this, folderName);
@@ -61,44 +61,28 @@ internal partial class Day7 : IDay
 
     static Folder ParseInput(string input)
     {
-        string[][] commands = input.Split("$ ").Select(c => c.Split("\r\n").Where(s => s != string.Empty).ToArray()).Where(s => s.Length != 0).ToArray();
+        IEnumerable<string[]> commands = input.Split("$ ").Select(c => c.Split("\r\n").Where(s => s != string.Empty).ToArray()).Where(s => s.Length != 0);
         Folder current = new (null, "");
 
         foreach (string[] command in commands)
         {
             string[] operation = command[0].Split(" ");
 
-            switch (operation[0])
+            if (operation[0][0] == 'c')
             {
-                case "cd":
-                    if (operation[1] == "/")
-                    {
-                        while (current.Parent != null) current = current.Parent;
-                    }
-                    else if (operation[1] == "..")
-                    {
-                        current = current.Parent ?? current;
-                    }
-                    else
-                    {
-                        current = current.AddChild(operation[1]);
-                    } break;
-
-                case "ls":
-                    foreach (string line in command)
-                    {
-                        MatchCollection matches = FileSizeName().Matches(line);
-                        if (matches.Count > 0)
-                        {
-                            string[] file = matches[0].Groups.Cast<Group>().Skip(1).Select(g => g.Value).ToArray();
-                            current.AddFile(file[1], long.Parse(file[0]));
-                        }
-                    } break;
+                current = operation[1] == ".." ? current.Parent ?? current : current.AddChild(operation[1]);
+            }
+            else
+            {
+                command.Select(l => FileSizeName().Matches(l)).Where(l => l.Count > 0)
+                    .Select(m => m.First().Groups.Cast<Group>().Skip(1).Select(g => g.Value).ToArray()).ToList()
+                    .ForEach(f => current.AddFile(f[1], long.Parse(f[0])));
             }
         }
 
         // traverse back to root now
         while (current.Parent != null) current = current.Parent;
+
 
         return current;
     }
