@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.ComponentModel.Design.Serialization;
 
 namespace AdventOfCode2022;
 internal class Day7 : IDay
@@ -19,56 +20,98 @@ internal class Day7 : IDay
         { "$ cd /\r\n$ ls\r\ndir a\r\n14848514 b.txt\r\n8504156 c.dat\r\ndir d\r\n$ cd a\r\n$ ls\r\ndir e\r\n29116 f\r\n2557 g\r\n62596 h.lst\r\n$ cd e\r\n$ ls\r\n584 i\r\n$ cd ..\r\n$ cd ..\r\n$ cd d\r\n$ ls\r\n4060174 j\r\n8033020 d.log\r\n5626152 d.ext\r\n7214296 k", "24933642" }
     };
 
-    static void AddToDict(Dictionary<string, Dictionary<string, int>> dict, string path, string fileName, int fileSize)
+    class Folder
     {
-        if (dict.TryGetValue(path, out Dictionary<string, int>? files))
+        public Folder? Parent { get; }
+        //public Folder Parent => parent ?? this;
+        public string Name { get; }
+        public long Size()
         {
-            files[fileName] = fileSize;
-            dict[path] = files;
+            long size = 0;
+            
+            foreach (File file in Files)
+            {
+                size += file.Size;
+            }
+            foreach (Folder child in Children)
+            {
+                size += child.Size();
+            }
+            
+
+            size = Files.Select(f => f.Size).Sum() + Children.Select(c => c.Size()).Sum();
+
+            return size;
         }
-        else
+        
+        public List<Folder> Children { get; }
+        public List<File> Files { get; }
+
+        public Folder AddOrGetChild(string folderName)
         {
-            dict[path] = new Dictionary<string, int> { { fileName, fileSize } };
+            Folder[] kids = Children.Where(f => f.Name == folderName).ToArray();
+
+            if (kids.Length == 0)
+            {
+                Folder newFolder = new Folder(this, folderName);
+                Children.Add(newFolder);
+                return newFolder;
+            }
+            else
+            {
+                return Children[Children.IndexOf(kids[0])];
+                // same as return kids[0] ?? dunno
+            }
+
+        }
+        public void AddFile(string fileName, long size)
+        {
+            Files.Add(new File(fileName, size));
+        }
+
+        public IEnumerable<Folder> GetChildren()
+        {
+            foreach (var child in Children)
+            {
+                yield return child;
+                
+                foreach (var c in child.GetChildren())
+                {
+                    yield return c;
+                }
+            }
+        }
+
+        public Folder(Folder? parent, string name)
+        {
+            this.Parent = parent;
+            this.Name = name;
+            Children = new List<Folder>();
+            Files = new List<File>();
+        }
+
+        public override string ToString()
+        {
+            return $"{Name} {Size()}";
         }
     }
 
-    static string ListToString(List<string> list)
-    => new string(list.SelectMany(s => s += "/").ToArray()).Trim('/');
-
-    static T?[] GetNeighbours<T>(T[,] grid, int y, int x, bool diagonals = false)
+    class File
     {
-        var coordsToCheck = new (int, int)[]
+        public string Name { get; }
+        public long Size { get; }
+        public File(string name, long size)
         {
-            (y - 1, x), // Up
-            (y, x + 1), // Right
-            (y + 1, x), // Down
-            (y, x - 1), // Left
-        };
-
-        if (diagonals)
-        {
-            coordsToCheck = coordsToCheck.Concat(new (int, int)[]
-            {
-                (y - 1, x + 1), // Up-Right
-                (y + 1, x + 1), // Down-Right
-                (y + 1, x - 1), // Down-Left
-                (y - 1, x - 1), // Up-Left
-
-            }).ToArray();
+            this.Name = name;
+            this.Size = size;
         }
-
-        return coordsToCheck.Select(c => y < grid.GetLength(0) && x < grid.GetLength(1) ? grid[c.Item1, c.Item2] : default).ToArray();
     }
 
     public string SolvePart1(string input)
     {
         string[][] commands = input.Split("$ ").Select(c => c.Split("\r\n")).ToArray();
 
-        List<string> currentDirectory = new();
-
-
-        //            path       files     filename  size
-        Dictionary<string, Dictionary<string, int>> directories = new();
+        Folder current = new Folder(null, "");
 
         for (int i = 0; i < commands.Length; i++)
         {
@@ -79,15 +122,15 @@ internal class Day7 : IDay
                 case "cd":
                     if (command[1] == "/")
                     {
-                        currentDirectory = new List<string>();
+                        while (current.Parent != null) current = current.Parent;
                     }
                     else if (command[1] == "..")
                     {
-                        currentDirectory.RemoveAt(currentDirectory.Count - 1);
+                        current = current.Parent ?? current;
                     }
                     else
                     {
-                        currentDirectory.Add(command[1]);
+                        current = current.AddOrGetChild(command[1]);
                     }
                     break;
 
@@ -105,15 +148,8 @@ internal class Day7 : IDay
                         }
                         else
                         {
-                            
                             string[] file = matches[0].Groups.Cast<Group>().Skip(1).Select(g => g.Value).ToArray();
-
-                            //Console.WriteLine($"Adding {file[1]} with a size of {file[0]}");
-
-                            for (int k = 1; k <= currentDirectory.Count; k++)
-                            {
-                                AddToDict(directories, ListToString(currentDirectory.Take(k).ToList()), file[1], int.Parse(file[0]));
-                            }
+                            current.AddFile(file[1], long.Parse(file[0]));
                         }
                     }
 
@@ -121,6 +157,7 @@ internal class Day7 : IDay
             }
         }
 
+        /*
         int total = 0;
 
         foreach (var dir in directories.Keys)
@@ -133,19 +170,17 @@ internal class Day7 : IDay
 
             if (sum <= 100000) total += sum;
         }
-
-        return $"{total}";
+        */
+        
+        return $"not implemented";
     }
 
     public string SolvePart2(string input)
     {
         string[][] commands = input.Split("$ ").Select(c => c.Split("\r\n").Where(s => s != string.Empty).ToArray()).Where(s => s.Length != 0).ToArray();
 
-        List<string> currentDirectory = new();
+        Folder current = new Folder(null, "");
 
-
-        //            path       files     filename  size
-        Dictionary<string, Dictionary<string, int>> directories = new();
 
         for (int i = 0; i < commands.Length; i++)
         {
@@ -156,15 +191,15 @@ internal class Day7 : IDay
                 case "cd":
                     if (command[1] == "/")
                     {
-                        currentDirectory = new List<string>();
+                        while (current.Parent != null) current = current.Parent;
                     }
                     else if (command[1] == "..")
                     {
-                        currentDirectory.RemoveAt(currentDirectory.Count - 1);
+                        current = current.Parent ?? current;
                     }
                     else
                     {
-                        currentDirectory.Add(command[1]);
+                        current = current.AddOrGetChild(command[1]);
                     }
                     break;
 
@@ -182,50 +217,22 @@ internal class Day7 : IDay
                         }
                         else
                         {
-
                             string[] file = matches[0].Groups.Cast<Group>().Skip(1).Select(g => g.Value).ToArray();
-
-
-                            for (int k = 0; k <= currentDirectory.Count; k++)
-                            {
-                                AddToDict(directories, ListToString(currentDirectory.Take(k).ToList()), file[1], int.Parse(file[0]));
-                            }
+                            current.AddFile(file[1], long.Parse(file[0]));
                         }
                     }
 
                     break;
             }
         }
+        // traverse back to root now
+        while (current.Parent != null) current = current.Parent;
 
-        Dictionary<string, int> dirSizes = new();
+        var usedSpace = current.Size();
+        var freeSpace = 70000000 - usedSpace;
+        var spaceToClear = 30000000 - freeSpace;
 
-        foreach (string dir in directories.Keys)
-        {
-            int sum = 0;
-            foreach (var kvp in directories[dir])
-            {
-                sum += kvp.Value;
-            }
 
-            dirSizes[dir] = sum;
-        }
-
-        var sizes = dirSizes.Select(d => d.Value).Order().ToArray();
-        int usedSpace = sizes[^1];
-
-        int remainingSpace = 70000000 - usedSpace;
-        int filesToRemove = 30000000 - remainingSpace;
-
-        Console.WriteLine(filesToRemove);
-
-        foreach (int size in sizes)
-        {
-            if (size >= filesToRemove)
-            {
-                return $"{size}";
-            }
-        }
-
-        return "failed";
+        return $"{current.GetChildren().Select(f => f.Size()).Order().Where(f => f >= spaceToClear).First()}";
     }
 }
