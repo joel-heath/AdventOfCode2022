@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 using System.ComponentModel.Design.Serialization;
 
 namespace AdventOfCode2022;
-internal class Day7 : IDay
+internal partial class Day7 : IDay
 {
     public int Day => 7;
     public Dictionary<string, string> UnitTestsP1 => new()
@@ -23,216 +23,97 @@ internal class Day7 : IDay
     class Folder
     {
         public Folder? Parent { get; }
-        //public Folder Parent => parent ?? this;
         public string Name { get; }
-        public long Size()
-        {
-            long size = 0;
-            
-            foreach (File file in Files)
-            {
-                size += file.Size;
-            }
-            foreach (Folder child in Children)
-            {
-                size += child.Size();
-            }
-            
-
-            size = Files.Select(f => f.Size).Sum() + Children.Select(c => c.Size()).Sum();
-
-            return size;
-        }
-        
-        public List<Folder> Children { get; }
-        public List<File> Files { get; }
-
-        public Folder AddOrGetChild(string folderName)
-        {
-            Folder[] kids = Children.Where(f => f.Name == folderName).ToArray();
-
-            if (kids.Length == 0)
-            {
-                Folder newFolder = new Folder(this, folderName);
-                Children.Add(newFolder);
-                return newFolder;
-            }
-            else
-            {
-                return Children[Children.IndexOf(kids[0])];
-                // same as return kids[0] ?? dunno
-            }
-
-        }
+        private List<File> Files { get; }
         public void AddFile(string fileName, long size)
-        {
-            Files.Add(new File(fileName, size));
-        }
+        => Files.Add(new File(fileName, size));
 
-        public IEnumerable<Folder> GetChildren()
+        private List<Folder> Children { get; }
+        public Folder AddChild(string folderName)
+        {
+            Folder newFolder = new(this, folderName);
+            Children.Add(newFolder);
+            return newFolder;
+        }
+        public IEnumerable<Folder> DeepChildren()
         {
             foreach (var child in Children)
             {
                 yield return child;
                 
-                foreach (var c in child.GetChildren())
+                foreach (var c in child.DeepChildren())
                 {
                     yield return c;
                 }
             }
         }
-
+        public long Size => Files.Select(f => f.Size).Sum() + Children.Select(c => c.Size).Sum();
         public Folder(Folder? parent, string name)
         {
-            this.Parent = parent;
-            this.Name = name;
+            Parent = parent;
+            Name = name;
             Children = new List<Folder>();
             Files = new List<File>();
         }
-
-        public override string ToString()
-        {
-            return $"{Name} {Size()}";
-        }
     }
 
-    class File
-    {
-        public string Name { get; }
-        public long Size { get; }
-        public File(string name, long size)
-        {
-            this.Name = name;
-            this.Size = size;
-        }
-    }
+    record File (string Name, long Size);
 
-    public string SolvePart1(string input)
-    {
-        string[][] commands = input.Split("$ ").Select(c => c.Split("\r\n")).ToArray();
-
-        Folder current = new Folder(null, "");
-
-        for (int i = 0; i < commands.Length; i++)
-        {
-            // 0th item is command, rest are computer response
-            string[] command = commands[i][0].Split(" ");
-            switch (command[0])
-            {
-                case "cd":
-                    if (command[1] == "/")
-                    {
-                        while (current.Parent != null) current = current.Parent;
-                    }
-                    else if (command[1] == "..")
-                    {
-                        current = current.Parent ?? current;
-                    }
-                    else
-                    {
-                        current = current.AddOrGetChild(command[1]);
-                    }
-                    break;
-
-                case "ls":
-                    for (int j = 1; j < commands[i].Length; j++)
-                    {
-                        string line = commands[i][j];
-
-                        MatchCollection matches = new Regex(@"(\d+) (.+)").Matches(line);
-
-                        if (matches.Count == 0)
-                        {
-                            // dir _: not useful
-                            continue;
-                        }
-                        else
-                        {
-                            string[] file = matches[0].Groups.Cast<Group>().Skip(1).Select(g => g.Value).ToArray();
-                            current.AddFile(file[1], long.Parse(file[0]));
-                        }
-                    }
-
-                    break;
-            }
-        }
-
-        /*
-        int total = 0;
-
-        foreach (var dir in directories.Keys)
-        {
-            int sum = 0;
-            foreach (var kvp in directories[dir])
-            {
-                sum += kvp.Value;
-            }
-
-            if (sum <= 100000) total += sum;
-        }
-        */
-        
-        return $"not implemented";
-    }
-
-    public string SolvePart2(string input)
+    static Folder ParseInput(string input)
     {
         string[][] commands = input.Split("$ ").Select(c => c.Split("\r\n").Where(s => s != string.Empty).ToArray()).Where(s => s.Length != 0).ToArray();
+        Folder current = new (null, "");
 
-        Folder current = new Folder(null, "");
-
-
-        for (int i = 0; i < commands.Length; i++)
+        foreach (string[] command in commands)
         {
-            // 0th item is command, rest are computer response
-            string[] command = commands[i][0].Split(" ");
-            switch (command[0])
+            string[] operation = command[0].Split(" ");
+
+            switch (operation[0])
             {
                 case "cd":
-                    if (command[1] == "/")
+                    if (operation[1] == "/")
                     {
                         while (current.Parent != null) current = current.Parent;
                     }
-                    else if (command[1] == "..")
+                    else if (operation[1] == "..")
                     {
                         current = current.Parent ?? current;
                     }
                     else
                     {
-                        current = current.AddOrGetChild(command[1]);
-                    }
-                    break;
+                        current = current.AddChild(operation[1]);
+                    } break;
 
                 case "ls":
-                    for (int j = 1; j < commands[i].Length; j++)
+                    foreach (string line in command)
                     {
-                        string line = commands[i][j];
-
-                        MatchCollection matches = new Regex(@"(\d+) (.+)").Matches(line);
-
-                        if (matches.Count == 0)
-                        {
-                            // dir _: not useful
-                            continue;
-                        }
-                        else
+                        MatchCollection matches = FileSizeName().Matches(line);
+                        if (matches.Count > 0)
                         {
                             string[] file = matches[0].Groups.Cast<Group>().Skip(1).Select(g => g.Value).ToArray();
                             current.AddFile(file[1], long.Parse(file[0]));
                         }
-                    }
-
-                    break;
+                    } break;
             }
         }
+
         // traverse back to root now
         while (current.Parent != null) current = current.Parent;
 
-        var usedSpace = current.Size();
-        var freeSpace = 70000000 - usedSpace;
-        var spaceToClear = 30000000 - freeSpace;
-
-
-        return $"{current.GetChildren().Select(f => f.Size()).Order().Where(f => f >= spaceToClear).First()}";
+        return current;
     }
+
+    public string SolvePart1(string input)
+    => $"{ParseInput(input).DeepChildren().Select(c => c.Size).Where(c => c <= 100000).Sum()}";
+
+    public string SolvePart2(string input)
+    {
+        Folder root = ParseInput(input);
+        long size = root.Size + 30000000 - 70000000;
+
+        return $"{root.DeepChildren().Select(f => f.Size).Order().Where(f => f >= size).First()}";
+    }
+
+    [GeneratedRegex("(\\d+) (.+)")]
+    private static partial Regex FileSizeName();
 }
