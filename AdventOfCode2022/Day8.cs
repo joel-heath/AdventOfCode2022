@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Threading.Tasks;
+using System.Security.Cryptography.X509Certificates;
 
 namespace AdventOfCode2022;
 internal class Day8 : IDay
@@ -11,11 +12,11 @@ internal class Day8 : IDay
     public int Day => 8;
     public Dictionary<string, string> UnitTestsP1 => new()
     {
-        { "TestInput", "Output" }
+        { "30373\r\n25512\r\n65332\r\n33549\r\n35390", "21" }
     };
     public Dictionary<string, string> UnitTestsP2 => new()
     {
-        { "TestInput", "Output" }
+        { "30373\r\n25512\r\n65332\r\n33549\r\n35390", "8" }
     };
 
     static void AddToDict<TKey>(Dictionary<TKey, int> dict, TKey key, int value)
@@ -66,37 +67,141 @@ internal class Day8 : IDay
         return coordsToCheck.Select(c => y < grid.GetLength(0) && x < grid.GetLength(1) ? grid[c.Item1, c.Item2] : default).ToArray();
     }
 
-    public string SolvePart1(string input)
+    public int[][] ParseInput(string input)
+        => input.Split("\r\n").Select(l => l.ToArray().Select(c => int.Parse($"{c}")).ToArray()).ToArray();
+
+    public bool IsVisible(int[][] map, int y, int x)
     {
-        string[] lines = input.Split("\r\n");
+        int height = map[y][x];
 
-        int[] items = new int[15].Select(s => 5).ToArray();
-
-        var result = new Dictionary<string, int>();
-        int count = 0;
-
-        for (int i = 0; i < lines.Length; i++)
+        bool north = true;
+        for (int i = y - 1; i >= 0; i--)
         {
-            string[] words = lines[i].Split(" ").Select(s => s.Trim(' ')).ToArray();
-
-
-
-            for (int j = 0; j < words.Length; j++)
+            if (map[i][x] >= height)
             {
-                string word = words[j];
-                if (word == "") continue;
+                north = false;
+            }
+        }
+        if (north) return true;
 
+        // south
+        bool south = true;
+        for (int i = y + 1; i < map.GetLength(0); i++)
+        {
+            if (map[i][x] >= height)
+            {
+                south = false;
+            }
+        }
+        if (south) return true;
 
+        //east
+        bool east = true;
+        for (int j = x + 1; j < map[0].GetLength(0); j++)
+        {
+            if (map[y][j] >= height)
+            {
+                east = false;
+            }
+        }
+        if (east) return true;
+
+        //west
+        bool west = true;
+        for (int j = x - 1; j >= 0; j--)
+        {
+            if (map[y][j] >= height)
+            {
+                west = false;
+            }
+        }
+        return west;
+    }
+
+    public int GetScenicScore(int[][] map, int y, int x)
+    {
+        int height = map[y][x];
+        int score = 0;
+
+        int north = 0;
+        for (int i = y - 1; i >= 0; i--)
+        {
+            north++;
+            if (map[i][x] >= height)
+            {
+                break;
             }
         }
 
+        int south = 0;
+        for (int i = y + 1; i < map.GetLength(0); i++)
+        {
+            south++;
+            if (map[i][x] >= height)
+            {
+                break;
+            }
+        }
 
+        int east = 0;
+        for (int j = x + 1; j < map[0].GetLength(0); j++)
+        {
+            east++;
+            if (map[y][j] >= height)
+            {
+                break;
+            }
+        }
 
-        return $"{string.Empty}";
+        int west = 0;
+        for (int j = x - 1; j >= 0; j--)
+        {
+            west++;
+            if (map[y][j] >= height)
+            {
+                break;
+            }
+        }
+        return north * south * east * west;
+    }
+
+    public string SolvePart1(string input)
+    {
+        int[][] grid = ParseInput(input);
+        int count = 0;
+
+        for (int y = 0; y < grid.GetLength(0); y++)
+        {
+            for (int x = 0; x < grid[0].GetLength(0); x++)
+            {
+                if (IsVisible(grid, y, x))
+                {
+                    //Console.WriteLine($"({y}, {x}): {grid[y][x]} is visible");
+                    count++;
+                }
+            }
+        }
+
+        return $"{count}";
     }
 
     public string SolvePart2(string input)
     {
-        return string.Empty;
+        int[][] grid = ParseInput(input);
+        int max = 0;
+
+        for (int y = 0; y < grid.GetLength(0); y++)
+        {
+            for (int x = 0; x < grid[0].GetLength(0); x++)
+            {
+                int score = GetScenicScore(grid, y, x);
+                if (score > max)
+                {
+                    max = score;
+                }
+            }
+        }
+
+        return $"{max}";
     }
 }
