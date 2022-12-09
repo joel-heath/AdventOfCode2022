@@ -17,125 +17,58 @@ internal class Day9 : IDay
     {
         { "R 5\r\nU 8\r\nL 8\r\nD 3\r\nR 17\r\nD 10\r\nL 25\r\nU 20", "36" }
     };
-
-    static void TailMove(int headX, int headY, ref int tailX, ref int tailY)
-    {
-        if (tailX + 2 == headX && tailY == headY) { tailX++; return; }
-        if (tailX - 2 == headX && tailY == headY) { tailX--; return; }
-        if (tailX == headX && tailY + 2 == headY) { tailY++; return; }
-        if (tailX == headX && tailY - 2 == headY) { tailY--; return; }
-
-        if (tailX + 1 == headX && tailY + 2 == headY) { tailX++; tailY++; return; }
-        if (tailX - 1 == headX && tailY + 2 == headY) { tailX--; tailY++; return; }
-        if (tailX + 1 == headX && tailY - 2 == headY) { tailX++; tailY--; return; }
-        if (tailX - 1 == headX && tailY - 2 == headY) { tailX--; tailY--; return; }
-
-        if (tailX + 2 == headX && tailY + 1 == headY) { tailX++; tailY++; return; }
-        if (tailX - 2 == headX && tailY + 1 == headY) { tailX--; tailY++; return; }
-        if (tailX + 2 == headX && tailY - 1 == headY) { tailX++; tailY--; return; }
-        if (tailX - 2 == headX && tailY - 1 == headY) { tailX--; tailY--; return; }
-    }
-
-    static void Move(char dir, int mag, ref int headX, ref int headY, ref int tailX, ref int tailY)
-    {
-        for (int i = 0; i < mag; i++)
-        {
-            switch (dir)
-            {
-                case 'L':
-                    headX--;
-                    break;
-                case 'R':
-                    headX++;
-                    break;
-                case 'U':
-                    headY--;
-                    break;
-                case 'D':
-                    headY++;
-                    break;
-            }
-
-            TailMove(headX, headY, ref tailX, ref tailY);
-
-            if (!vis.Contains((tailX, tailY))) vis.Add((tailX, tailY));
-        }
-    }
-
-    static List<(int, int)> vis = new();
-
-    public string SolvePart1(string input)
-    {
-        string[] lines = input.Split("\r\n");
-
-        int headX = 0; int headY = 0;
-        int tailX = 0; int tailY = 0;
-
-        for (int i = 0; i < lines.Length; i++)
-        {
-            string[] words = lines[i].Split(" ").Select(s => s.Trim(' ')).ToArray();
-
-            Move(words[0][0], int.Parse(words[1]), ref headX, ref headY, ref tailX, ref tailY);
-        }
-
-
-
-        return $"{vis.Count}";
-    }
-
-
-
     static (int, int) IntelliMove(int headX, int headY, int tailX, int tailY)
     {
-        if (tailX + 2 == headX && tailY == headY) { tailX++; return (tailX, tailY); }
-        if (tailX - 2 == headX && tailY == headY) { tailX--; return (tailX, tailY); }
-        if (tailX == headX && tailY + 2 == headY) { tailY++; return (tailX, tailY); }
-        if (tailX == headX && tailY - 2 == headY) { tailY--; return (tailX, tailY); }
+        List<(int x, int y)> vectors = new()
+        {
+            { (2, 0) }, { (-2, 0) }, { (0, 2) }, { (0, -2) },
+            { (1, 2) }, { (-1, 2) }, { (1, -2) }, { (-1, -2) },
+            { (2, 1) }, { (-2, 1) }, { (2, -1) }, { (-2, -1) },
+            { (2, 2) }, { (-2, 2) }, { (2, -2) }, { (-2, -2) },
+        };
 
-        if (tailX + 1 == headX && tailY + 2 == headY) { tailX++; tailY++; return (tailX, tailY); }
-        if (tailX - 1 == headX && tailY + 2 == headY) { tailX--; tailY++; return (tailX, tailY); }
-        if (tailX + 1 == headX && tailY - 2 == headY) { tailX++; tailY--; return (tailX, tailY); }
-        if (tailX - 1 == headX && tailY - 2 == headY) { tailX--; tailY--; return (tailX, tailY); }
-
-        if (tailX + 2 == headX && tailY + 1 == headY) { tailX++; tailY++; return (tailX, tailY); }
-        if (tailX - 2 == headX && tailY + 1 == headY) { tailX--; tailY++; return (tailX, tailY); }
-        if (tailX + 2 == headX && tailY - 1 == headY) { tailX++; tailY--; return (tailX, tailY); }
-        if (tailX - 2 == headX && tailY - 1 == headY) { tailX--; tailY--; return (tailX, tailY); }
-
-        if (tailX + 2 == headX && tailY + 2 == headY) { tailX++; tailY++; return (tailX, tailY); }
-        if (tailX - 2 == headX && tailY + 2 == headY) { tailX--; tailY++; return (tailX, tailY); }
-        if (tailX + 2 == headX && tailY - 2 == headY) { tailX++; tailY--; return (tailX, tailY); }
-        if (tailX - 2 == headX && tailY - 2 == headY) { tailX--; tailY--; return (tailX, tailY); }
+        foreach (var vect in vectors)
+        {
+            if ((headX, headY) == (tailX + vect.x, tailY + vect.y))
+            {
+                return (tailX + vect.x.CompareTo(0), tailY + vect.y.CompareTo(0));
+            }
+        }
 
         return (tailX, tailY);
     }
 
-    static void MoveAll(char dir, int mag, (int x, int y)[] rope)
+    static void MoveAll(char dir, int mag, (int x, int y)[] rope, List<(int, int)> visited)
     {
         for (int i = 0; i < mag; i++)
         {
-            switch (dir)
-            {
-                case 'L':
-                    rope[0].x--;
-                    break;
-                case 'R':
-                    rope[0].x++;
-                    break;
-                case 'U':
-                    rope[0].y--;
-                    break;
-                case 'D':
-                    rope[0].y++;
-                    break;
-            }
-            for (int h = 1; h < 10; h++)
+            rope[0].x += dir switch { 'L' => -1, 'R' => 1, _ => 0 };
+            rope[0].y += dir switch { 'U' => -1, 'D' => 1, _ => 0 };
+
+            for (int h = 1; h < rope.Length; h++)
             {
                 rope[h] = IntelliMove(rope[h - 1].x, rope[h - 1].y, rope[h].x, rope[h].y);
             }
 
-            if (!vis.Contains(rope[9])) { vis.Add(rope[9]); }
+            if (!visited.Contains(rope[^1])) { visited.Add(rope[^1]); }
         }
+    }
+
+    public string SolvePart1(string input)
+    {
+        string[] lines = input.Split("\r\n");
+        List<(int, int)> vis = new();
+
+        (int, int)[] rope = new (int x, int y)[2];
+
+        for (int i = 0; i < lines.Length; i++)
+        {
+            string[] words = lines[i].Split(" ");
+
+            MoveAll(words[0][0], int.Parse(words[1]), rope, vis);
+        }
+
+        return $"{vis.Count}";
     }
 
     public string SolvePart2(string input)
@@ -143,12 +76,13 @@ internal class Day9 : IDay
         string[] lines = input.Split("\r\n");
 
         (int, int)[] rope = new (int x, int y)[10];
+        List<(int, int)> vis = new ();
 
         for (int i = 0; i < lines.Length; i++)
         {
             string[] words = lines[i].Split(" ");
 
-            MoveAll(words[0][0], int.Parse(words[1]), rope);
+            MoveAll(words[0][0], int.Parse(words[1]), rope, vis);
         }
 
         return $"{vis.Count}";

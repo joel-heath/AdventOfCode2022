@@ -78,6 +78,7 @@ internal class Program
         Console.WriteLine($"\nDay {day.Day} Part {part}");
 
         string input = File.ReadAllText(Path.Combine(startupPath, @$"Inputs\day{day.Day}.txt"));
+
         string output = (part == 1) ? day.SolvePart1(input) : day.SolvePart2(input);
 
         Console.ForegroundColor = ConsoleColor.White;
