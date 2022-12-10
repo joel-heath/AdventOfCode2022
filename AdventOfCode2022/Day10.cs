@@ -20,68 +20,33 @@ internal class Day10 : IDay
 
     public string SolvePart1(string input)
     {
-        string[] lines = input.Split("\r\n");
-
-        int X = 1;
-        int cycle = 0;
-        int strengths = 0;
-
-        for (int i = 0; i < lines.Length; i++)
-        {
-            string[] words = lines[i].Split(" ");
-
-            switch (words[0])
-            {
-                case "addx":
-                    if ((++cycle - 20) % 40 == 0) { strengths += cycle * X; }
-                    if ((++cycle - 20) % 40 == 0) { strengths += cycle * X; }
-
-                    X += int.Parse(words[1]);
-                    break;
-                case "noop":
-                    if ((++cycle-20) % 40 == 0) { strengths += cycle * X; }
-                    break;
-            }
-        }
-
-        return $"{strengths}";
+        int X = 1; int cycle = 0;
+        return $"{input.Split("\r\n").Select(l => l.Split(" ")).Select(l => l[0] == "noop" ? CycleP1(++cycle, ref X) : CycleP1(++cycle, ref X, int.Parse(l[1]), CycleP1(++cycle, ref X))).Sum()}";
     }
 
-    static void Cycle(ref int cycle, ref int crt, ref string output, int X)
+    static int CycleP1(int cycle, ref int X, int xInc = 0, int currSigStr = 0)
     {
-        cycle++;
+        int oldX = X;
+        X += xInc;
+        if ((cycle - 20) % 40 == 0) { return currSigStr + cycle * oldX; }
+        return currSigStr;
+    }
+
+    static string CycleP2(int cycle, ref int X, ref int crt, int xInc = 0, string currOut = "")
+    {
+        int oldX = X;
+        X += xInc;
+
         crt = (crt + 1) % 40;
-        output += (crt == X%40 || crt == (X + 1)%40 || crt == (X + 2) % 40) ? "#" : ".";
-        if (crt == 0) output += "\r\n";
+        currOut += (crt == oldX % 40 || crt == (oldX + 1) % 40 || crt == (oldX + 2) % 40) ? "#" : ".";
+        if (crt == 0) currOut += "\r\n";
+
+        return currOut;
     }
 
     public string SolvePart2(string input)
     {
-        string[] lines = input.Split("\r\n");
-
-        int X = 1;
-        int cycle = 0;
-        int crt = 0;
-        string crtContents = string.Empty;
-
-        for (int i = 0; i < lines.Length; i++)
-        {
-            string[] words = lines[i].Split(" ");
-
-            switch (words[0])
-            {
-                case "addx":
-                    Cycle(ref cycle, ref crt, ref crtContents, X);
-                    Cycle(ref cycle, ref crt, ref crtContents, X);
-                    X += int.Parse(words[1]);
-                    break;
-                case "noop":
-                    Cycle(ref cycle, ref crt, ref crtContents, X);
-                    break;
-            }
-        }
-
-        Console.WriteLine(); // makes output easier to read
-        return $"{crtContents.TrimEnd('\n').TrimEnd('\r')}";
+        int X = 1; int cycle = 0; int crt = 0;
+        return $"{string.Join("", input.Split("\r\n").Select(l => l.Split(" ")).Select(l => l[0] == "noop" ? CycleP2(++cycle, ref X, ref crt) : CycleP2(++cycle, ref X, ref crt, int.Parse(l[1]), CycleP2(++cycle, ref X, ref crt)))).TrimEnd('\n').TrimEnd('\r')}";
     }
 }
