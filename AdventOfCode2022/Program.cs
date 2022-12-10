@@ -6,15 +6,20 @@ internal class Program
 {
     static void UnitTests(IDay day, int part)
     {
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("Unit Tests");
+
         var tests = (part == 1) ? day.UnitTestsP1 : day.UnitTestsP2;
 
         foreach (string testI in tests.Keys)
         {
             Console.ForegroundColor = ConsoleColor.White;
-            string testO = (part == 1) ? day.SolvePart1(testI) : day.SolvePart2(testI);
-
             //Console.WriteLine($"Input: {testI}");
-            Console.WriteLine($"Output: {testO}");
+            Console.Write($"Output: ");
+
+            string testO = (part == 1) ? day.SolvePart1(testI) : day.SolvePart2(testI);
+            Console.WriteLine(testO);
+            
 
             if (testO == tests[testI])
             {
@@ -79,11 +84,12 @@ internal class Program
 
         string input = File.ReadAllText(Path.Combine(startupPath, @$"Inputs\day{day.Day}.txt"));
 
-        string output = (part == 1) ? day.SolvePart1(input) : day.SolvePart2(input);
-
         Console.ForegroundColor = ConsoleColor.White;
         //Console.WriteLine($"Input: {input}");
-        Console.WriteLine($"Output: {output}");
+        Console.Write($"Output: ");
+        string output = (part == 1) ? day.SolvePart1(input) : day.SolvePart2(input);
+        
+        Console.WriteLine(output);
 
         string outputLocation = Path.Combine(startupPath, @$"Outputs\day{day.Day}.txt");
 
