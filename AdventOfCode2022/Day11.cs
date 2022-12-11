@@ -72,44 +72,39 @@ internal class Day11 : IDay
 
     class Monkey
     {
-        public List<BigInteger> items;
-        public int opcode; // 0 is old *, 1 is old +
+        public List<Int128> items;
+        public int opcode; // 0 is * 1 is +
         public int? operand;
         public int test;
         public int ifTrue;
         public int ifFalse;
-        public BigInteger inspectionCount = 0;
+        public long inspectionCount = 0;
 
     }
 
+    // Euclid's algorithm
     static int Gfc(int a, int b)
     {
         while (b != 0)
         {
-            int temp = b;
-            b = a % b;
-            a = temp;
+            (a, b) = (b, a % b);
         }
         return a;
     }
-
-    static int Lcm(int a, int b)
-    {
-        return (a / Gfc(a, b)) * b;
-    }
+    static int Lcm(int a, int b) => a * b / Gfc(a, b);
 
     static Monkey[] ParseInput(string input)
     {
-        string[] monkeys = input.Split("\r\n\r\n").Where(n => n != string.Empty).ToArray();
+        string[] rawMonkeys = input.Split("\r\n\r\n").Where(n => n != string.Empty).ToArray();
+        Monkey[] monkeys = new Monkey[rawMonkeys.Length];
+        Regex r = new (@"(\d+)");
 
-        Monkey[] output = new Monkey[monkeys.Length];
-
-        for (int m = 0; m < monkeys.Length; m++)
+        for (int m = 0; m < rawMonkeys.Length; m++)
         {
-            string[] line = monkeys[m].Split("\r\n").Select(s => s.Trim(' ')).ToArray();
+            string[] line = rawMonkeys[m].Split("\r\n").Select(s => s.Trim(' ')).ToArray();
 
-            Regex r = new Regex(@"(\d+)");
-            var startingItems = r.Matches(line[1]).Select(m => BigInteger.Parse(m.Groups.Cast<Group>().First().Value)).ToList();
+            
+            var startingItems = r.Matches(line[1]).Select(m => Int128.Parse(m.Groups.Cast<Group>().First().Value)).ToList();
             int opcode = line[2].Contains("*") ? 0 : 1;
 
             int? operand = null;
@@ -119,29 +114,29 @@ internal class Day11 : IDay
             int ifTrue = r.Matches(line[4]).Select(m => int.Parse(m.Groups.Cast<Group>().First().Value)).First();
             int ifFalse = r.Matches(line[5]).Select(m => int.Parse(m.Groups.Cast<Group>().First().Value)).First();
 
-            output[m] = new Monkey() { items = startingItems, opcode = opcode, operand = operand, test = test, ifTrue = ifTrue, ifFalse = ifFalse };
+            monkeys[m] = new Monkey() { items = startingItems, opcode = opcode, operand = operand, test = test, ifTrue = ifTrue, ifFalse = ifFalse };
         }
 
-        return output;
+        return monkeys;
     }
 
     public string SolvePart1(string input)
-    {/*
+    {
         Monkey[] monkeys = ParseInput(input);
-
 
         for (int r = 0; r < 20; r++)
         {
             for (int m = 0; m < monkeys.Length; m++)
             {
                 Monkey monkey = monkeys[m];
-                int repeat = monkey.startingItems.Count;
+                int repeat = monkey.items.Count;
                 for (int i = 0; i < repeat; i++)
                 {
-                    long item = monkey.startingItems.First();
+                    Int128 item = monkey.items[0];
                     monkey.inspectionCount++;
 
-                    long result = ( (monkey.opcode == 0 ? ((monkey.operand == null) ? item * item : item * monkey.operand!.Value) : item + monkey.operand!.Value) ) / 3;
+                    Int128 result = ( (monkey.opcode == 0 ? ((monkey.operand == null) ? item * item : item * monkey.operand!.Value) : item + monkey.operand!.Value) ) / 3;
+
                     int monkeyToPassTo;
                     if (result % (monkey.test) == 0)
                     {
@@ -154,16 +149,15 @@ internal class Day11 : IDay
 
                     //Console.WriteLine($"Item with worry level{result} is thrown to Monkeyu {monkeyToPassTo}");
 
-                    monkey.startingItems.RemoveAt(0);
-                    monkeys[monkeyToPassTo].startingItems.Add(result);
+                    monkey.items.RemoveAt(0);
+                    monkeys[monkeyToPassTo].items.Add(result);
                 }
             }
         }
 
         Monkey[] mostActive = monkeys.OrderByDescending(m => m.inspectionCount).ToArray();
 
-        return $"{mostActive[0].inspectionCount * mostActive[1].inspectionCount}";*/
-        return "yo";
+        return $"{mostActive[0].inspectionCount * mostActive[1].inspectionCount}";
     }
    
     public string SolvePart2(string input)
@@ -180,10 +174,10 @@ internal class Day11 : IDay
                 int repeat = monkey.items.Count;
                 for (int i = 0; i < repeat; i++)
                 {
-                    BigInteger item = monkey.items[0];
+                    Int128 item = monkey.items[0];
                     monkey.inspectionCount++;
 
-                    BigInteger result = (monkey.opcode == 0 ? ((monkey.operand == null) ? item * item : item * monkey.operand!.Value) : item + monkey.operand!.Value ) % LCM;
+                    Int128 result = (monkey.opcode == 0 ? ((monkey.operand == null) ? item * item : item * monkey.operand!.Value) : item + monkey.operand!.Value ) % LCM;
 
                     int monkeyToPassTo;
                     if (result % monkey.test == 0)
@@ -201,16 +195,8 @@ internal class Day11 : IDay
             }
         }
 
-        foreach (Monkey mon in monkeys)
-        {
-            Console.WriteLine(mon.inspectionCount);
-        }
-
         Monkey[] mostActive = monkeys.OrderByDescending(m => m.inspectionCount).ToArray();
 
-
         return $"{mostActive[0].inspectionCount * mostActive[1].inspectionCount}";
-
-        // 14232445500 too high
     }
 }
