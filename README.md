@@ -4,12 +4,9 @@ My C# solutions to [Advent of Code 22](https://adventofcode.com/2022). Trying to
 ## Notes
 
 ### Legend
-🟢 Successful one-liner.
-
-🟡 Could be reduced to one-liner but would require repeated evaluations of the same code.
-
-🟠 Far from a one-liner, with minimal amounts of code reduced.
-
+🟢 Successful one-liner.<br>
+🟡 Could be reduced to one-liner but would require repeated evaluations of the same code.<br>
+🟠 Far from a one-liner, with minimal amounts of code reduced.<br>
 🔴 Barely a visible effort to reduce the code.
 
 | **Day** | **Verbosity** | **Notes** |
