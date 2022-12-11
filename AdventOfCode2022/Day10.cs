@@ -48,6 +48,4 @@ internal class Day10 : IDay
 
         return currOut;
     }
-
-
 }
