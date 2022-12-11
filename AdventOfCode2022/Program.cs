@@ -18,6 +18,11 @@ internal class Program
             Console.Write($"Output: ");
 
             string testO = (part == 1) ? day.SolvePart1(testI) : day.SolvePart2(testI);
+
+            if (testO.Contains("\r\n"))
+            {
+                Console.WriteLine();
+            }
             Console.WriteLine(testO);
             
 
@@ -88,6 +93,11 @@ internal class Program
         //Console.WriteLine($"Input: {input}");
         Console.Write($"Output: ");
         string output = (part == 1) ? day.SolvePart1(input) : day.SolvePart2(input);
+
+        if (output.Contains("\r\n"))
+        {
+            Console.WriteLine();
+        }
         
         Console.WriteLine(output);
 

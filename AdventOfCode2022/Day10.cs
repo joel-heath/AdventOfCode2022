@@ -24,6 +24,11 @@ internal class Day10 : IDay
         return $"{input.Split("\r\n").Select(l => l.Split(" ")).Select(l => l[0] == "noop" ? CycleP1(++cycle, ref X) : CycleP1(++cycle, ref X, int.Parse(l[1]), CycleP1(++cycle, ref X))).Sum()}";
     }
 
+    public string SolvePart2(string input)
+    {
+        int X = 1; int cycle = 0; int crt = 0;
+        return $"{string.Join("", input.Split("\r\n").Select(l => l.Split(" ")).Select(l => l[0] == "noop" ? CycleP2(++cycle, ref X, ref crt) : CycleP2(++cycle, ref X, ref crt, int.Parse(l[1]), CycleP2(++cycle, ref X, ref crt)))).TrimEnd('\n').TrimEnd('\r')}";
+    }
     static int CycleP1(int cycle, ref int X, int xInc = 0, int currSigStr = 0)
     {
         int oldX = X;
@@ -44,9 +49,5 @@ internal class Day10 : IDay
         return currOut;
     }
 
-    public string SolvePart2(string input)
-    {
-        int X = 1; int cycle = 0; int crt = 0;
-        return $"{string.Join("", input.Split("\r\n").Select(l => l.Split(" ")).Select(l => l[0] == "noop" ? CycleP2(++cycle, ref X, ref crt) : CycleP2(++cycle, ref X, ref crt, int.Parse(l[1]), CycleP2(++cycle, ref X, ref crt)))).TrimEnd('\n').TrimEnd('\r')}";
-    }
+
 }
