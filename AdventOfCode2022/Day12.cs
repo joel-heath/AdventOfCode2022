@@ -17,7 +17,7 @@ internal class Day12 : IDay
     };
     public Dictionary<string, string> UnitTestsP2 => new()
     {
-        { "TestInput", "Output" }
+        { "Sabqponm\r\nabcryxxl\r\naccszExk\r\nacctuvwj\r\nabdefghi", "29" }
     };
 
     static (int[,], Point, Point) ParseInput(string input)
@@ -39,21 +39,17 @@ internal class Day12 : IDay
         public Node? p; // parent
         public Point s;
         public int g; // distance from origin
-        public int h; // heuristic
-        public int f; // total
-        public Point end;
 
-        public Node(Point self, Node? parent, Point end)
+        public Node(Point self, Node? parent)
         {
             this.p = parent;
             this.s = self;
             this.g = Equals(parent, null) ? 0 : p.g + 1;
-            this.h = self.DistanceFrom(end);
-            this.f = this.g + this.h;
-            this.end = end;
+            //this.h = self.DistanceFrom(end);
+            //this.f = this.g + this.h;
         }
 
-        public Node Add(Point b) => new ((s.y + b.y, s.x + b.x), this, end);
+        public Node Add(Point b) => new ((s.y + b.y, s.x + b.x), this);
         public static bool operator ==(Node a, Point b) => a.s.y == b.y && a.s.x == b.x;
         public static bool operator !=(Node a, Point b) => a.s.y != b.y || a.s.x != b.x;
     }
@@ -84,7 +80,7 @@ internal class Day12 : IDay
         public static explicit operator Point(Node n) => n.s;
     }
 
-    static bool IsValid(Point s, Point d, int[,] map)
+    static bool IsP1Valid(Point s, Point d, int[,] map)
     {
         int rows = map.GetLength(0);
         int cols = map.GetLength(1);
@@ -92,6 +88,15 @@ internal class Day12 : IDay
         if (d.y < 0 || d.y >= rows || d.x < 0 || d.x >= cols) return false;
 
         return map[d.y, d.x] - map[s.y, s.x] <= 1;
+    }
+    static bool IsValid(Point s, Point d, int[,] map)
+    {
+        int rows = map.GetLength(0);
+        int cols = map.GetLength(1);
+
+        if (d.y < 0 || d.y >= rows || d.x < 0 || d.x >= cols) return false;
+
+        return map[s.y, s.x] - map[d.y, d.x] <= 1;
     }
 
     static int IndexOf(List<Node> list, Point p)
@@ -103,10 +108,9 @@ internal class Day12 : IDay
         }
         return -1;
     }
-
+    /*
     static int PathFind(Point start, Point end, int[,] map)
     {
-        Console.WriteLine();
         int ROW = map.GetLength(0);
         int COL = map.GetLength(1);
 
@@ -117,7 +121,7 @@ internal class Day12 : IDay
         {
             Point[] vectors = { (1, 0), (-1, 0), (0, 1), (0, -1) };
 
-            Node currentNode = open.MinBy(n => n.f)!;
+            Node currentNode = open.MinBy(n => n.g)!;
             open.Remove(currentNode);
             closed.Add(currentNode);
 
@@ -156,7 +160,7 @@ internal class Day12 : IDay
         }
 
         return count;
-    }
+    }*/
 
     static T[,] To2D<T>(T[][] source)
     {
@@ -178,19 +182,82 @@ internal class Day12 : IDay
         }
     }
 
+    static int Dijkstras(Point start, int[,] map)
+    {
+        int ROW = map.GetLength(0);
+        int COL = map.GetLength(1);
+
+        List<Node> open = new() { new (start, null) };
+        List<Node> closed = new();
+
+        Node currentNode = new (start, null);
+
+        while (open.Count > 0)
+        {
+            Point[] vectors = { (1, 0), (-1, 0), (0, 1), (0, -1) };
+
+            //Console.WriteLine(open.Count);
+            currentNode = open.MinBy(n => n.g)!;
+            open.Remove(currentNode);
+            closed.Add(currentNode);
+
+            if (map[currentNode.s.y, currentNode.s.x] == 0) { break; }
+            
+            foreach (Point vector in vectors)
+            {
+                Node newNode = currentNode.Add(vector);
+
+                if (IndexOf(closed, (Point)newNode) != -1) { continue; }
+
+                if (!IsValid((Point)currentNode, (Point)newNode, map)) { continue; }
+
+                if (IndexOf(open, (Point)newNode) == -1)
+                {
+                    open.Add(newNode);
+                }
+                else
+                {
+                    if (newNode.g < open[IndexOf(open, (Point)newNode)].g)
+                    {
+                        open[IndexOf(open, (Point)newNode)] = newNode;
+                    }
+                }
+            }
+        }
+
+        if (IndexOf(closed, currentNode.s) == -1) return -1;
+
+        Node curr = closed[IndexOf(closed, currentNode.s)];
+        int count = 0;
+
+        while (!Equals(curr.p, null))
+        {
+            curr = curr.p; count++;
+        }
+
+        return count;
+    }
+
     public string SolvePart1(string input)
     {
+        /*
         (int[,] map, Point start, Point end) = ParseInput(input);
-        Console.WriteLine($"Start: ({start.y}, {start.x})");
-        Console.WriteLine($"Goal: ({end.y}, {end.x})");
 
         int distance = PathFind(start, end, map);
 
         return $"{distance}";
+        */
+
+        return "lol fail";
     }
 
     public string SolvePart2(string input)
     {
-        return string.Empty;
+        (int[,] map, _, Point E) = ParseInput(input);
+        int distance = Dijkstras(E, map);
+
+        return $"{distance}";
+
+        // 173 too low
     }
 }
