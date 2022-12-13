@@ -23,55 +23,37 @@ internal class Day13 : IDay
         { "TestInput", "Output" }
     };
 
-    static void Insert(List<object> list, List<int> indices, int itemToInsert)
-    {
-        if (indices.Count > 1)
-        {
-            List<object> child;
-            try { child = (List<object>)list[indices[0]]; }
-            catch (ArgumentOutOfRangeException) { child = new List<object>(); list.Add(child); }
-
-            Insert(child, indices.Skip(1).ToList(), itemToInsert);
-        }
-        else
-        {
-            list.Add(itemToInsert);
-        }
-    }
-
-    static List<object> ParsePacket(string input)
+    static (List<object>, int) ParsePacket(string input, int index)
     {
         var packet = new List<object>();
-        var indices = new List<int>() { -1 };
+        string currNum = string.Empty;
 
-        var r = new Regex(@"(\d+|\[|]|,)+");
-        IEnumerable<string> characters = r.Matches(input).First().Groups[1].Captures.Select(c => c.Value);
-
-        foreach (string l in characters)
+        for (; index < input.Length; index++)
         {
-            if (l[0] == '[')
+            char l = input[index];
+            if (l == '[')
             {
-                packet.Add(new List<object>());
-                indices[^1]++;
-                indices.Add(-1);
-
+                var child = ParsePacket(input, ++index);
+                index = child.Item2;
+                packet.Add(child.Item1);
             }
-            else if (l[0] == ']')
+            else if (l == ',')
             {
-                indices.RemoveAt(indices.Count - 1);
+                if (currNum != string.Empty) packet.Add(int.Parse(currNum));
+                currNum = string.Empty;
             }
-            else if (l[0] == ',')
+            else if (l == ']')
             {
-                continue;
+                if (currNum != string.Empty) packet.Add(int.Parse(currNum));
+                return (packet, index);
             }
             else
             {
-                indices[^1]++;
-                Insert(packet, indices, int.Parse(l));
+                currNum += l;
             }
         }
 
-        return ((List<object>)packet[0]).Where(p => p is int || ((List<object>)p).Count > 0).ToList();
+        return (packet, index);
     }
 
     public static List<(List<object>, List<object>)> ParseInput(string input)
@@ -82,9 +64,9 @@ internal class Day13 : IDay
 
         for (int i = 0; i < groups.Length; i++)
         {
-            string[] lines = groups[i].Split("\r\n");
+            string[] lines = groups[i].Split("\r\n");//.Select(l => l[1..]).ToArray();
 
-            allPairs.Add((ParsePacket(lines[0]), ParsePacket(lines[1])));
+            allPairs.Add((ParsePacket(lines[0], 0).Item1, ParsePacket(lines[1], 0).Item1));
         }
 
         return allPairs;
