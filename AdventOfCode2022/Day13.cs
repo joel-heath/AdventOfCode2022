@@ -9,6 +9,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Collections;
 using System.Reflection;
+using System.Diagnostics.CodeAnalysis;
 
 namespace AdventOfCode2022;
 internal class Day13 : IDay
@@ -20,7 +21,7 @@ internal class Day13 : IDay
     };
     public Dictionary<string, string> UnitTestsP2 => new()
     {
-        { "TestInput", "Output" }
+        { "[1,1,3,1,1]\r\n[1,1,5,1,1]\r\n\r\n[[1],[2,3,4]]\r\n[[1],4]\r\n\r\n[9]\r\n[[8,7,6]]\r\n\r\n[[4,4],4,4]\r\n[[4,4],4,4,4]\r\n\r\n[7,7,7,7]\r\n[7,7,7]\r\n\r\n[]\r\n[3]\r\n\r\n[[[]]]\r\n[[]]\r\n\r\n[1,[2,[3,[4,[5,6,7]]]],8,9]\r\n[1,[2,[3,[4,[5,6,0]]]],8,9]", "140" }
     };
 
     static (List<object>, int) ParsePacket(string input, int index)
@@ -64,7 +65,7 @@ internal class Day13 : IDay
 
         for (int i = 0; i < groups.Length; i++)
         {
-            string[] lines = groups[i].Split("\r\n");//.Select(l => l[1..]).ToArray();
+            string[] lines = groups[i].Split("\r\n");
 
             allPairs.Add((ParsePacket(lines[0], 0).Item1, ParsePacket(lines[1], 0).Item1));
         }
@@ -109,8 +110,6 @@ internal class Day13 : IDay
             int leftInt = (int)left;
             int rightInt = (int)right;
 
-            //Console.WriteLine($"Comparing {leftInt} vs {rightInt}");
-
             if (rightInt < leftInt)
             {
                 return Result.Unordered;
@@ -127,7 +126,6 @@ internal class Day13 : IDay
     public string SolvePart1(string input)
     {
         List<(List<object>, List<object>)> pairs = ParseInput(input);
-        Console.WriteLine("Parsed!");
         int count = 0;
 
         for (int i = 0; i < pairs.Count; i++)
@@ -139,22 +137,64 @@ internal class Day13 : IDay
 
             if (result == Result.Ordered)
             {
-                //Console.WriteLine($"Pair {i+1} is good!");
                 count += i + 1;
             }
         }
 
-        // 1163 not correct
-        // 3536 too low
-        // 5487 too low
-
-        // 5775 INCREDIBLY SLOW
-
         return $"{count}";
+    }
+
+    static void Sort(List<List<object>> list)
+    {
+        bool sorted = false;
+        while (!sorted)
+        {
+            sorted = true;
+            for (int i = 0; i < list.Count - 1; i++)
+            {
+                if (ComparePair(list[i], list[i+1]) == Result.Unordered)
+                {
+                    (list[i], list[i+1]) = (list[i+1], list[i]);
+                    sorted = false;
+                }
+            }
+        }
     }
 
     public string SolvePart2(string input)
     {
-        return string.Empty;
+        List<List<object>> packets = ParseInput(input + "\r\n\r\n[[2]]\r\n[[6]]").SelectMany(s => new List<List<object>> { s.Item1, s.Item2 }).ToList();
+
+        Sort(packets);
+
+        int result = 1;
+        int count = 0;
+        for (int i = 0; i < packets.Count && count < 2; i++)
+        {
+            List<object> p = packets[i];
+            try
+            {
+                if (p.Count == 1)
+                {
+                    var child = (List<object>)p[0];
+                    if (child.Count == 1)
+                    {
+                        var grandchild = (List<object>)child[0];
+                        if (grandchild.Count == 1)
+                        {
+                            var greatgrandchild = (int)grandchild[0];
+                            if (greatgrandchild == 6 || greatgrandchild == 2)
+                            {
+                                result *= i + 1;
+                                count++;
+                            }
+                        }
+                    }
+                }
+            }
+            catch { continue; }
+        }
+
+        return $"{result}";
     }
 }
