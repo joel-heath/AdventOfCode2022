@@ -23,91 +23,84 @@ internal class Day14 : IDay
         { "498,4 -> 498,6 -> 496,6\r\n503,4 -> 502,4 -> 502,9 -> 494,9", "93" }
     };
 
-    static void AddToDict<TKey>(Dictionary<TKey, int> dict, TKey key, int value)
+    static void AddToGrid(Dictionary<int, List<int>> grid, int x, int y)
     {
-        if (dict.TryGetValue(key, out int oldValue))
+        if (grid.TryGetValue(x, out List<int>? value))
         {
-            dict[key] = oldValue + value;
+            value.Add(y);
         }
         else
         {
-            dict[key] = value;
+            grid[x] = new List<int>() { y };
         }
     }
-    static void AddToDict<TKey>(Dictionary<TKey, string> dict, TKey key, string value)
+
+    static void StraightLine(Dictionary<int, List<int>> grid, (int x, int y) p1, (int x, int y) p2)
     {
-        if (dict.TryGetValue(key, out string? oldValue))
+        if (p1.x == p2.x)
         {
-            dict[key] = oldValue + value;
+            int small = Math.Min(p1.y, p2.y);
+            int large = Math.Max(p1.y, p2.y);
+
+            for (int i = small; i <= large; i++)
+            {
+                AddToGrid(grid, p1.x, i);
+            }
         }
         else
         {
-            dict[key] = value;
+            int small = Math.Min(p1.x, p2.x);
+            int large = Math.Max(p1.x, p2.x);
+
+            for (int i = small; i <= large; i++)
+            {
+                AddToGrid(grid, i, p1.y);
+            }
         }
     }
 
-    
-
-    enum Material { Air, Rock, RestedSand, Sand }
-
-    static (Dictionary<Point, Material>, int) ParseInput(string input)
+    static (Dictionary<int, List<int>>, int) ParseInput(string input)
     {
+        Dictionary<int, List<int>> grid = new();
         int abyssLevel = 0;
+
         string[] lines = input.Split("\r\n");
-
-        Dictionary<Point, Material> grid = new Dictionary<Point, Material>();//new PointComparer());
-
         for (int i = 0; i < lines.Length; i++)
         {
             string[] line = lines[i].Split(" -> ");
-            
-            Point? lastCoord = null;
-            for (int j = 0; j < line.Length; j++)
+            string[] init = line[0].Split(',');
+
+            (int x, int y) old = new(int.Parse(init[0]), int.Parse(init[1]));
+
+            for (int j = 1; j < line.Length; j++)
             {
-                IEnumerable<int> coord = line[j].Split(',').Select(int.Parse);
-                Point here = (coord.First(), coord.Last());
+                string[] coord = line[j].Split(',');
+                (int x, int y) curr = (int.Parse(coord[0]), int.Parse(coord[1]));
 
-                if (coord.Last() > abyssLevel) abyssLevel = coord.Last();
+                if (curr.y > abyssLevel) abyssLevel = curr.y;
 
-                if (null == lastCoord)
-                {
-                    grid.Add(here, Material.Rock);
-                }
-                else
-                {
-                    lastCoord.PointsTo(here, true).ToList().ForEach(p => grid.Add(p, Material.Rock));
-                }
-
-                lastCoord = here;
+                StraightLine(grid, old, curr);
+                old = curr;
             }
         }
 
         return (grid, abyssLevel + 2);
     }
 
-    static bool PositionBlocked(Dictionary<Point, Material> grid, Point point)
+    static (int, int)? FlowSand(Dictionary<int, List<int>> grid, (int x, int y) p)
     {
-        foreach (KeyValuePair<Point, Material> pair in grid)
-        {
-            if (pair.Key.X == point.X && pair.Key.Y == point.Y) return true;
-        }
-        return false;
-    }
-
-    static Point? FlowSand(Dictionary<Point, Material> grid, Point p)
-    {
-        var vectors = new Point[]
+        var vectors = new (int x,int y)[]
         {
             ( 0, 1), // Down
             (-1, 1), // Down-Left
             ( 1, 1), // Down-Right
         };
 
-        foreach (var coord in vectors)
+        foreach (var (x, y) in vectors)
         {
-            Point newPoint = (p.X + coord.X, p.Y + coord.Y);
+            (int x, int y) newPoint = (p.x + x, p.y + y);
 
-            if (grid.ContainsKey(p)) //PositionBlocked(grid, newPoint))
+            if (grid.TryGetValue(newPoint.x, out List<int>? value) && value.Contains(newPoint.y))
             {
                 continue;
             }
@@ -120,24 +113,6 @@ internal class Day14 : IDay
         return null;
     }
 
-    static void DrawGrid(Dictionary<Point, Material> grid)
-    {
-        foreach (Point p in grid.Keys)
-        {
-            Console.SetCursorPosition(p.X - 450, p.Y);
-            
-            if (grid[p] == Material.Rock)
-            {
-                Console.Write('#');
-            }
-            else if (grid[p] == Material.RestedSand)
-            {
-                Console.Write('o');
-            }
-        }
-
-    }
-
     public string SolvePart1(string input)
     {
         (var grid, int abyssLevel) = ParseInput(input);
@@ -147,23 +122,21 @@ internal class Day14 : IDay
         while (!reachedAbyss)
         {
             bool rested = false;
-            Point pos = (500, 1);
+            (int x, int y) pos = (500, 0);
             while (!rested)
             {
-                Point? newPos = FlowSand(grid, pos);
+                (int x, int y) newPos = FlowSand2(grid, pos, -1);
 
-                //Console.WriteLine(newPos);
-
-                if (newPos == null)
+                if (newPos.x == pos.x && newPos.y == pos.y)
                 {
                     rested = true;
                     count++;
-                    grid.Add(pos, Material.RestedSand);
+                    AddToGrid(grid, pos.x, pos.y);
                 }
                 else
                 {
                     pos = newPos;
-                    if (newPos.Y > abyssLevel)
+                    if (pos.y > abyssLevel)
                     {
                         reachedAbyss = true;
                         //count--;
@@ -176,134 +149,24 @@ internal class Day14 : IDay
         return $"{count}";
     }
 
-
-
-    class Point
+    static (int, int) FlowSand2(Dictionary<int, List<int>> grid, (int x, int y) p, int abyssLevel)
     {
-        public int X;
-        public int Y;
-
-        public Point(int x, int y)
-        {
-            X = x;
-            Y = y;
-        }
-
-        public Point[] PointsTo(Point p, bool inclusive = false)
-        {
-            if (X == p.X)
-            {
-                int big = Math.Max(Y, p.Y);
-                int small = Math.Min(Y, p.Y);
-                Point[] points;
-
-                if (!inclusive)
-                {
-                    points = new Point[big - small];
-                    for (int i = 0; i < big - small; i++)
-                    {
-                        points[i] = (X, small + i);
-                    }
-                }
-                else
-                {
-                    points = new Point[big - small + 1];
-                    for (int i = 0; i <= big - small; i++)
-                    {
-                        points[i] = (X, small + i);
-                    }
-                }
-                return points;
-            }
-            else if (Y == p.Y)
-            {
-                int big = Math.Max(X, p.X);
-                int small = Math.Min(X, p.X);
-                Point[] points;
-
-                if (!inclusive)
-                {
-                    points = new Point[big - small];
-                    for (int i = 0; i < big - small; i++)
-                    {
-                        points[i] = (small + i, Y);
-                    }
-                }
-                else
-                {
-                    points = new Point[big - small + 1];
-                    for (int i = 0; i <= big - small; i++)
-                    {
-                        points[i] = (small + i, Y);
-                    }
-                }
-                return points;
-            }
-            else { throw new Exception("Cannot build straight line between points"); }
-        }
-
-        public override string ToString() => $"({X}, {Y})";
-        public static implicit operator Point(ValueTuple<int, int> tuple) => new(tuple.Item1, tuple.Item2);
-
-        public static Point operator +(Point a, Point b) => new(a.X + b.X, a.Y + b.Y);
-        //public static bool operator ==(Point? a, Point? b) => (a.Equals(null) && b.Equals(null)) || ( !b.Equals(null) && a.X == b.X && a.Y == b.Y);
-        //public static bool operator !=(Point? a, Point? b) => a.X != b.X || a.Y != b.Y;
-
-        /*
-        public bool Equals(Point? other)
-        {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return other.X == X && other.Y == Y;
-        }
-
-        public override bool Equals(object? obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != typeof(Point)) return false;
-            return Equals((Point)obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(X, Y);
-        }*/
-        
-    }
-    /*
-    class PointComparer : IEqualityComparer<Point>
-    {
-        public static bool Equals(Point a, Point b)
-        {
-            return a.X == b.X && a.Y == b.Y;
-        }
-
-        public int GetHashCode(Point a)
-        {
-            return a.X.GetHashCode() + a.Y.GetHashCode();
-        }
-    }
-    */
-
-    static Point FlowSand2(Dictionary<Point, Material> grid, Point p, int abyssLevel)
-    {
-        var vectors = new Point[]
+        var vectors = new (int x, int y)[]
         {
             ( 0, 1), // Down
             (-1, 1), // Down-Left
             ( 1, 1), // Down-Right
         };
 
-        foreach (var coord in vectors)
+        foreach (var (x, y) in vectors)
         {
-            Point newPoint = (p.X + coord.X, p.Y + coord.Y);
+            (int x, int y) newPoint = (p.x + x, p.y + y);
 
-            if (newPoint.Y == abyssLevel || PositionBlocked(grid, newPoint)) // grid.ContainsKey(p))
+            if (newPoint.y == abyssLevel || grid.TryGetValue(newPoint.x, out List<int>? value) && value.Contains(newPoint.y))
             {
                 continue;
             }
-            else 
+            else
             {
                 return newPoint;
             }
@@ -315,33 +178,32 @@ internal class Day14 : IDay
     public string SolvePart2(string input)
     {
         (var grid, int abyssLevel) = ParseInput(input);
-        Console.WriteLine(abyssLevel);
+        
         int count = 0;
         bool completelyFilled = false;
         while (!completelyFilled)
         {
             bool rested = false;
-            Point pos = (500, 0);
+            (int x, int y) pos = (500, 0);
             while (!rested)
             {
-                Point newPos = FlowSand2(grid, pos, abyssLevel);
+                (int x, int y) newPos = FlowSand2(grid, pos, abyssLevel);
 
-                if (newPos.X == pos.X && newPos.Y == pos.Y)
+                if (newPos.x == pos.x && newPos.y == pos.y)
                 {
-                    if (newPos.X == 500 && newPos.Y == 0)
+                    if (newPos.x == 500 && newPos.y == 0)
                     {
                         completelyFilled = true;
                     }
                     rested = true;
                     count++;
-                    grid.Add(pos, Material.RestedSand);
+                    AddToGrid(grid, pos.x, pos.y);
                 }
                 else
                 {
                     pos = newPos;
                 }
             }
-            Console.WriteLine($"Sand rested at {pos}");
         }
 
         return $"{count}";
