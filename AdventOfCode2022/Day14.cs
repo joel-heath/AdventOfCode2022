@@ -59,6 +59,32 @@ internal class Day14 : IDay
         }
     }
 
+    static (int, int) FlowSand(Dictionary<int, List<int>> grid, (int x, int y) p, int abyssLevel)
+    {
+        var vectors = new (int x, int y)[]
+        {
+            ( 0, 1), // Down
+            (-1, 1), // Down-Left
+            ( 1, 1), // Down-Right
+        };
+
+        foreach (var (x, y) in vectors)
+        {
+            (int x, int y) newPoint = (p.x + x, p.y + y);
+
+            if (newPoint.y == abyssLevel || grid.TryGetValue(newPoint.x, out List<int>? value) && value.Contains(newPoint.y))
+            {
+                continue;
+            }
+            else
+            {
+                return newPoint;
+            }
+        }
+
+        return p;
+    }
+
     static (Dictionary<int, List<int>>, int) ParseInput(string input)
     {
         Dictionary<int, List<int>> grid = new();
@@ -87,32 +113,6 @@ internal class Day14 : IDay
         return (grid, abyssLevel + 2);
     }
 
-    static (int, int)? FlowSand(Dictionary<int, List<int>> grid, (int x, int y) p)
-    {
-        var vectors = new (int x,int y)[]
-        {
-            ( 0, 1), // Down
-            (-1, 1), // Down-Left
-            ( 1, 1), // Down-Right
-        };
-
-        foreach (var (x, y) in vectors)
-        {
-            (int x, int y) newPoint = (p.x + x, p.y + y);
-
-            if (grid.TryGetValue(newPoint.x, out List<int>? value) && value.Contains(newPoint.y))
-            {
-                continue;
-            }
-            else
-            {
-                return newPoint;
-            }
-        }
-
-        return null;
-    }
-
     public string SolvePart1(string input)
     {
         (var grid, int abyssLevel) = ParseInput(input);
@@ -125,7 +125,7 @@ internal class Day14 : IDay
             (int x, int y) pos = (500, 0);
             while (!rested)
             {
-                (int x, int y) newPos = FlowSand2(grid, pos, -1);
+                (int x, int y) newPos = FlowSand(grid, pos, -1);
 
                 if (newPos.x == pos.x && newPos.y == pos.y)
                 {
@@ -149,32 +149,6 @@ internal class Day14 : IDay
         return $"{count}";
     }
 
-    static (int, int) FlowSand2(Dictionary<int, List<int>> grid, (int x, int y) p, int abyssLevel)
-    {
-        var vectors = new (int x, int y)[]
-        {
-            ( 0, 1), // Down
-            (-1, 1), // Down-Left
-            ( 1, 1), // Down-Right
-        };
-
-        foreach (var (x, y) in vectors)
-        {
-            (int x, int y) newPoint = (p.x + x, p.y + y);
-
-            if (newPoint.y == abyssLevel || grid.TryGetValue(newPoint.x, out List<int>? value) && value.Contains(newPoint.y))
-            {
-                continue;
-            }
-            else
-            {
-                return newPoint;
-            }
-        }
-
-        return p;
-    }
-
     public string SolvePart2(string input)
     {
         (var grid, int abyssLevel) = ParseInput(input);
@@ -187,7 +161,7 @@ internal class Day14 : IDay
             (int x, int y) pos = (500, 0);
             while (!rested)
             {
-                (int x, int y) newPos = FlowSand2(grid, pos, abyssLevel);
+                (int x, int y) newPos = FlowSand(grid, pos, abyssLevel);
 
                 if (newPos.x == pos.x && newPos.y == pos.y)
                 {

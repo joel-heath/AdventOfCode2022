@@ -50,12 +50,32 @@ internal class Day12 : IDay
         {
             this.p = parent;
             this.s = self;
-            this.g = Equals(parent, null) ? 0 : p.g + 1;
+            this.g = Equals(parent, null) ? 0 : p!.g + 1;
         }
 
         public Node Add(Point b) => new ((s.y + b.y, s.x + b.x), this);
-        public static bool operator ==(Node a, Point? b) => b == null ? false : a.s.y == b.y && a.s.x == b.x;
+        public static bool operator ==(Node a, Point? b) => b != null && a.s.y == b.y && a.s.x == b.x;
         public static bool operator !=(Node a, Point b) => a.s.y != b.y || a.s.x != b.x;
+
+        public override bool Equals(object? obj)
+        {
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj is null)
+            {
+                return false;
+            }
+
+            throw new NotImplementedException();
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(p, s, g);
+        }
     }
 
     public class Point

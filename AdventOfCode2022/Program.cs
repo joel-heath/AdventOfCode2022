@@ -71,8 +71,8 @@ internal class Program
         }
         else if (args.Length == 3)
         {
-            day = Day.TryGetDay(args[0]) ?? throw new ArgumentNullException("Invalid number of days");
-            if (!int.TryParse(args[1].Trim(' '), out part) || !(part == 1 || part == 2)) { throw new ArgumentNullException("Invalid part number"); }
+            day = Day.TryGetDay(args[0]) ?? throw new ArgumentNullException("day", "Invalid number of days");
+            if (!int.TryParse(args[1].Trim(' '), out part) || !(part == 1 || part == 2)) { throw new ArgumentNullException("part", "Invalid part number"); }
             if (args[2] == "1") { UnitTests(day, part); }
         }
         else

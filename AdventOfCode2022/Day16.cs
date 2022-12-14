@@ -11,18 +11,42 @@ internal class Day16 : IDay
     public int Day => 16;
     public Dictionary<string, string> UnitTestsP1 => new()
     {
-        { "TestInput", "Output" },
-        { "Input2", "Output" },
+        { "TestInput", "Output" }
     };
     public Dictionary<string, string> UnitTestsP2 => new()
     {
         { "TestInput", "Output" },
-        { "Input2", "Output" },
     };
+
+    static void ParseInput(string input)
+    {
+        string[] lines = input.Split("\r\n");
+
+        Dictionary<string, int> map = new();
+
+        for (int i = 0; i < lines.Length; i++)
+        {
+            string[] line = lines[i].Split(' ').Select(w => w.Trim(' ')).ToArray();
+
+
+
+            for (int j = 0; j < line.Length; j++)
+            {
+                string word = line[j];
+
+
+            }
+        }
+
+
+    }
 
     public string SolvePart1(string input)
     {
-        return string.Empty;
+        ParseInput(input);
+
+
+        return $"{string.Empty}";
     }
 
     public string SolvePart2(string input)
