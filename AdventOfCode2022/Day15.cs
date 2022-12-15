@@ -10,6 +10,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.ComponentModel;
 using System.Drawing;
 using System.Text.RegularExpressions;
+using System.Linq.Expressions;
 
 namespace AdventOfCode2022;
 internal partial class Day15 : IDay
@@ -24,22 +25,18 @@ internal partial class Day15 : IDay
         { "TestInput", "Output" }
     };
 
-    static bool AddToGrid(Dictionary<Point, char> grid, int x, int y, char c)
+    static bool AddToGrid(Dictionary<int, char> grid, int x, char c)
     {
-        if (!grid.ContainsKey((x, y)))
-        {
-            grid.Add((x, y), c);
-            return true;
-        }
-        else
-        {
+        if (grid.ContainsKey(x)) 
             return false;
-        }
+
+        grid.Add(x, c);
+        return true;
     }
 
-    static Dictionary<Point, char> ParseInput(string input)
+    static Dictionary<int, char> ParseInput(string input, int line)
     {
-        Dictionary<Point, char> grid = new();
+        Dictionary<int, char> grid = new();
 
         //Regex r = InputParse();
 
@@ -48,72 +45,47 @@ internal partial class Day15 : IDay
         {    
             int[] nums = InputParse().Match(lines[i]).Groups.Cast<Group>().Skip(1).Select(c => int.Parse(c.Value)).ToArray();
 
-            AddToGrid(grid, nums[0], nums[1], 'S'); // add sensor
-            AddToGrid(grid, nums[2], nums[3], 'B'); // add beacon
+            if (nums[1] == line)
+                AddToGrid(grid, nums[0], 'S'); // add sensor 
+
+            if (nums[3] == line)
+                AddToGrid(grid, nums[2], 'B'); // add beacon
+
 
             int distance = Math.Abs(nums[2] - nums[0]) + Math.Abs(nums[3] - nums[1]);
 
-            int xInc = 0;
-            int yInc = distance;
-
-            while (yInc > 0) // first quadrant
+            if (-distance <= line - nums[1] && line - nums[1] <= distance)
             {
-                for (int j = yInc; j > 0; j--)
-                {
-                    AddToGrid(grid, nums[0] + xInc, nums[1] - j, '#');
-                }
-                xInc++; yInc--;
-            }
+                int count = distance - (line - nums[1]); // num of # either side of midpoint
 
-            while (xInc > 0) // second quadrant
-            {
-                for (int j = xInc; j > 0; j--)
+                for (int j = -count; j <= count; j++)
                 {
-                    AddToGrid(grid, nums[0] + j, nums[1] + yInc, '#');
+                    AddToGrid(grid, nums[0] + j, '#');
                 }
-                xInc--; yInc++;
             }
-
-            while (yInc > 0) // third quadrant
-            {
-                for (int j = yInc; j > 0; j--)
-                {
-                    AddToGrid(grid, nums[0] - xInc, nums[1] + j, '#');
-                }
-                xInc++; yInc--;
-            }
-
-            while (xInc > 0) // fourth quadrant
-            {
-                for (int j = xInc; j > 0; j--)
-                {
-                    AddToGrid(grid, nums[0] - j, nums[1] + yInc, '#');
-                }
-                xInc--; yInc--;
-            }
-
-            Console.WriteLine($"LINE {i} FINISHED");
         }
 
 
         return grid;
     }
 
-    static void DrawGrid(Dictionary<Point, char> grid)
+    static void RenderLine(Dictionary<int, char> grid)
     {
-        foreach (KeyValuePair<Point, char> pair in grid)
+        foreach (var kvp in grid)
         {
-            Console.SetCursorPosition(pair.Key.X + 10, pair.Key.Y + 10);
-            Console.Write(pair.Value);
+            Console.CursorLeft = kvp.Key+10;
+            Console.Write(kvp.Value);
         }
     }
 
     public string SolvePart1(string input)
     {
-        const int YLEVEL = 2000000;
-        var grid = ParseInput(input);
+        const int YLEVEL = 10;
+        var grid = ParseInput(input, YLEVEL);
         Console.WriteLine("Input Parsed!");
         
+        RenderLine(grid);
+
         /*
         Console.ReadKey(true);
         Console.Clear();
@@ -121,7 +93,9 @@ internal partial class Day15 : IDay
 
         Console.ReadKey(true);
         */
-        return $"{grid.Where(kvp => (kvp.Key.Y == YLEVEL && kvp.Value != 'B')).Count()}";
+
+
+        return $"{grid.Where(kvp => kvp.Value != 'B').Count()}";
     }
 
     public string SolvePart2(string input)
