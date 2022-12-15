@@ -58,6 +58,11 @@ internal partial class Day15 : IDay
             {
                 int count = distance - (line - nums[1]); // num of # either side of midpoint
 
+                if (count > distance) // Triangle goes back down - diamond shape
+                {                   // treat line as if it were opposite side of triangle
+                    count = distance - (line + 2 * (nums[1] - line) - nums[1]);
+                }
+
                 for (int j = -count; j <= count; j++)
                 {
                     AddToGrid(grid, nums[0] + j, '#');
@@ -80,11 +85,11 @@ internal partial class Day15 : IDay
 
     public string SolvePart1(string input)
     {
-        const int YLEVEL = 10;
+        const int YLEVEL = 2000000;
         var grid = ParseInput(input, YLEVEL);
         Console.WriteLine("Input Parsed!");
         
-        RenderLine(grid);
+        //RenderLine(grid);
 
         /*
         Console.ReadKey(true);
