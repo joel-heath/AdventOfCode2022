@@ -24,24 +24,22 @@ internal partial class Day15 : IDay
         { "TestInput", "Output" }
     };
 
-    static bool AddToGrid(Dictionary<int, List<int>> grid, int x, int y)
+    static bool AddToGrid(Dictionary<Point, char> grid, int x, int y, char c)
     {
-        if (grid.TryGetValue(y, out List<int>? value))
+        if (!grid.ContainsKey((x, y)))
         {
-            if (value.Contains(x)) { return false; }
-            value.Add(x);
+            grid.Add((x, y), c);
+            return true;
         }
         else
         {
-            grid[y] = new List<int>() { x };
+            return false;
         }
-        return true;
     }
 
-    static Dictionary<int, List<int>> ParseInput(string input)
+    static Dictionary<Point, char> ParseInput(string input)
     {
-        Dictionary<int, List<int>> grid = new();
-
+        Dictionary<Point, char> grid = new();
 
         //Regex r = InputParse();
 
@@ -50,8 +48,8 @@ internal partial class Day15 : IDay
         {    
             int[] nums = InputParse().Match(lines[i]).Groups.Cast<Group>().Skip(1).Select(c => int.Parse(c.Value)).ToArray();
 
-            AddToGrid(grid, nums[0], nums[1]); // add sensor
-            //AddToGrid(grid, nums[2], nums[3]); // add beacon
+            AddToGrid(grid, nums[0], nums[1], 'S'); // add sensor
+            AddToGrid(grid, nums[2], nums[3], 'B'); // add beacon
 
             int distance = Math.Abs(nums[2] - nums[0]) + Math.Abs(nums[3] - nums[1]);
 
@@ -62,7 +60,7 @@ internal partial class Day15 : IDay
             {
                 for (int j = yInc; j > 0; j--)
                 {
-                    AddToGrid(grid, nums[0] + xInc, nums[1] + j);
+                    AddToGrid(grid, nums[0] + xInc, nums[1] - j, '#');
                 }
                 xInc++; yInc--;
             }
@@ -71,7 +69,7 @@ internal partial class Day15 : IDay
             {
                 for (int j = xInc; j > 0; j--)
                 {
-                    AddToGrid(grid, nums[0] + j, nums[1] + yInc);
+                    AddToGrid(grid, nums[0] + j, nums[1] + yInc, '#');
                 }
                 xInc--; yInc++;
             }
@@ -80,7 +78,7 @@ internal partial class Day15 : IDay
             {
                 for (int j = yInc; j > 0; j--)
                 {
-                    AddToGrid(grid, nums[0] - xInc, nums[1] + j);
+                    AddToGrid(grid, nums[0] - xInc, nums[1] + j, '#');
                 }
                 xInc++; yInc--;
             }
@@ -89,26 +87,41 @@ internal partial class Day15 : IDay
             {
                 for (int j = xInc; j > 0; j--)
                 {
-                    AddToGrid(grid, nums[0] - j, nums[1] + yInc);
+                    AddToGrid(grid, nums[0] - j, nums[1] + yInc, '#');
                 }
                 xInc--; yInc--;
             }
 
-            grid[nums[3]].Remove(nums[2]); // get rid of beacon
+            Console.WriteLine($"LINE {i} FINISHED");
         }
 
 
         return grid;
     }
 
+    static void DrawGrid(Dictionary<Point, char> grid)
+    {
+        foreach (KeyValuePair<Point, char> pair in grid)
+        {
+            Console.SetCursorPosition(pair.Key.X + 10, pair.Key.Y + 10);
+            Console.Write(pair.Value);
+        }
+    }
+
     public string SolvePart1(string input)
     {
+        const int YLEVEL = 2000000;
         var grid = ParseInput(input);
-        const int YLEVEL = 10;
+        Console.WriteLine("Input Parsed!");
+        
+        /*
+        Console.ReadKey(true);
+        Console.Clear();
+        DrawGrid(grid);
 
-       
-
-        return $"{grid[YLEVEL].Count}";
+        Console.ReadKey(true);
+        */
+        return $"{grid.Where(kvp => (kvp.Key.Y == YLEVEL && kvp.Value != 'B')).Count()}";
     }
 
     public string SolvePart2(string input)
