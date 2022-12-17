@@ -10,6 +10,7 @@ using System.Xml.Linq;
 using System.ComponentModel;
 using System.Xml.Schema;
 using System.Reflection.Metadata.Ecma335;
+using System.Runtime.InteropServices;
 
 namespace AdventOfCode2022;
 internal partial class Day16 : IDay
@@ -26,18 +27,14 @@ internal partial class Day16 : IDay
 
     class Valve
     {
-        public readonly string Name;
         public readonly int FlowRate;
-        public string[] Tunnels;
-        public List<Valve> ConnectedValves = new();
-        public bool Open;
+        public string[] AdjacentValves;
+        public Dictionary<Valve, int> Tunnels;
 
-        public Valve(string name, int flowrate,  string[] valveList)
+        public Valve(int flowrate, string[] adjactents)
         {
-            Name = name;
             FlowRate = flowrate;
-            Tunnels = valveList;
-            Open = false;
+            AdjacentValves = adjactents;
         }
     }
 
@@ -98,9 +95,10 @@ internal partial class Day16 : IDay
         public override int GetHashCode() => HashCode.Combine(ValvesOpened);
     }
 
-    static List<Valve> ParseInput(string input)
+    static Dictionary<string, Valve> ParseInput(string input)
     {
-        List<Valve> valves = new();
+        Dictionary<string, Valve> valves = new();
+        List<(string name, string[] tunnels)> nodes = new();
 
         Regex r = InputParse();
         
@@ -109,24 +107,74 @@ internal partial class Day16 : IDay
         {
             string[] line = r.Match(lines[i]).Groups.Cast<Group>().Skip(1).Select(c => c.Value).ToArray();
 
-            valves.Add(new Valve(line[0], int.Parse(line[1]),
-                new string[] { line[2] }.Concat(line[3].Split(", "))
-                .Select(s => s.Trim(' ').Trim(',')).Where(s => s != string.Empty).ToArray()));
+            string[] tunnels = new string[] { line[2] }
+                .Concat(line[3].Split(", "))
+                .Select(s => s.Trim(' ').Trim(',')).Where(s => s != string.Empty).ToArray();
+
+            nodes.Add((line[0], tunnels));
+
+            valves.Add(line[0], new Valve(int.Parse(line[1]), tunnels));
         }
-
-        foreach (Valve v in valves)
+        
+        /*
+        for (int i = 0; i < nodes.Count; i++)
         {
-            List<Valve> connectedValves = new();
+            var n = nodes[i];
+            Dictionary<Valve, int> tuns = new();
 
-            foreach (string t in v.Tunnels)
-                connectedValves.Add(valves.Where(v => v.Name == t).First());
+            foreach (string t in n.tunnels)
+                tuns.Add(valves[t], 1);
 
-            v.ConnectedValves = connectedValves;
+            valves[n.name].Tunnels = tuns;
+        }*/
+
+        foreach (var v in valves)
+        {
+            v.Value.Tunnels = Dijkstras(v.Value, valves);
         }
 
         return valves;
     }
 
+    static Dictionary<Valve, int> Dijkstras(Valve start, Dictionary<string, Valve> valves)
+    {
+        Dictionary<Valve, int> closed = new();
+        Dictionary<Valve, int> open = new() { { start, 0 } };
+
+        while (open.Count > 0)
+        {
+            var kvp = open.MinBy(s => s.Value);
+            Valve chosen = kvp.Key;
+            int distance = kvp.Value;
+
+            open.Remove(chosen);
+            closed.Add(chosen, distance);
+
+            foreach (string valveName in chosen.AdjacentValves)
+            {
+                Valve valve = valves[valveName];
+
+                if (!closed.ContainsKey(valve))
+                {
+                    if (open.TryGetValue(valve, out int oldDistance))
+                    {
+                        if (distance + 1 < oldDistance)
+                            open[valve] = distance + 1;
+                    }
+                    else
+                    {
+                        open.Add(valve, distance + 1);
+                    }
+                }
+            }
+        }
+
+        closed.Remove(start);
+
+        return closed;
+    }
+
+    /*
     static int AttemptRoute(Route route, Valve valve)
     {
         int max = 0;
@@ -159,10 +207,11 @@ internal partial class Day16 : IDay
 
         return max;
     }
-
+    */
     public string SolvePart1(string input)
     {
         var valves = ParseInput(input);
+        /*
         Valve currentValve = valves.Where(v => v.Name == "AA").First();
 
         Route route = new();
@@ -171,6 +220,9 @@ internal partial class Day16 : IDay
         route.ValvesVisited = new() { currentValve };
 
         return $"{AttemptRoute(route, currentValve)}";
+        */
+
+        return "hey i just met you and this is crazy but heres my number so call me maybe";
     }
 
     public string SolvePart2(string input)
