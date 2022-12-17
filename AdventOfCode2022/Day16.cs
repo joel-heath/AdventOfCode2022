@@ -115,18 +115,6 @@ internal partial class Day16 : IDay
 
             valves.Add(line[0], new Valve(int.Parse(line[1]), tunnels));
         }
-        
-        /*
-        for (int i = 0; i < nodes.Count; i++)
-        {
-            var n = nodes[i];
-            Dictionary<Valve, int> tuns = new();
-
-            foreach (string t in n.tunnels)
-                tuns.Add(valves[t], 1);
-
-            valves[n.name].Tunnels = tuns;
-        }*/
 
         foreach (var v in valves)
         {
@@ -208,6 +196,7 @@ internal partial class Day16 : IDay
         return max;
     }
     */
+
     public string SolvePart1(string input)
     {
         var valves = ParseInput(input);

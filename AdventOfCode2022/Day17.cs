@@ -17,11 +17,11 @@ internal class Day17 : IDay
     };
     public Dictionary<string, string> UnitTestsP2 => new()
     {
-        { "TestInput", "Output" }
+        { ">>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>", "1514285714288" }
     };
 
 
-    static void PushRock(Dictionary<int, HashSet<int>> grid, ref Point[] rock, bool right, int WIDTH)
+    static void PushRock(Dictionary<int, HashSet<int>> grid, ref Point[] rock, bool right, int WIDTH=6)
     {
         if (right)
         {
@@ -114,7 +114,7 @@ internal class Day17 : IDay
 
         Point[] rock = Array.Empty<Point>();
         bool newRock = true;
-        for (int i = 0, s = 0; s < 2023; i++)
+        for (int i = 0, s = 0; s <= 5009; i++)
         {
             int yLevel = grid.Keys.Max();
             if (newRock)
@@ -132,8 +132,108 @@ internal class Day17 : IDay
         return $"{grid.Keys.Max() + 1}";
     }
 
+    static Point[][] rockShapes = new Point[][] {
+            new Point[] { (2,0), (3,0), (4,0), (5,0) },
+            new Point[] { (2,1), (3,0), (3,1), (3,2), (4,1) },
+            new Point[] { (2,0), (3,0), (4,0), (4,1), (4,2) },
+            new Point[] { (2,0), (2,1), (2,2), (2,3) },
+            new Point[] { (2,0), (2,1), (3,0), (3,1) },
+        };
+
+    static (int rows, int rocks) DropUntilIts(long iterations, Dictionary<int, HashSet<int>> grid, string input, ref Point[] rock, ref bool newRock, ref long inputPos, ref long shapeIndex)
+    {
+        var droppedRocks = 0;
+        for (long i = 0; i < iterations; i++)
+        {
+            int yLevel = grid.Keys.Max();
+            if (newRock)
+                rock = rockShapes[shapeIndex++ % rockShapes.Length].Select(p => p + (0, yLevel + 4)).ToArray();
+            //newRock = false;
+
+            PushRock(grid, ref rock, input[(int)((i + inputPos) % input.Length)] == '>');
+            newRock = DropRock(grid, ref rock);
+            if (newRock) droppedRocks++;
+        }
+
+        inputPos = (inputPos + iterations) % input.Length;
+        return (grid.Keys.Max() + 1, droppedRocks);
+    }
+
+    static long DropUntilRocks(long rocksToDrop, Dictionary<int, HashSet<int>> grid, string input, ref Point[] rock, ref bool newRock, ref long inputPos, ref long shapeIndex)
+    {
+        int droppedRocks = 0;
+        for (long i = 0; droppedRocks < rocksToDrop; i++)
+        {
+            int yLevel = grid.Keys.Max();
+            if (newRock)
+            {
+                rock = rockShapes[shapeIndex++ % rockShapes.Length].Select(p => p + (0, yLevel + 4)).ToArray();
+            }
+            //newRock = false;
+
+            PushRock(grid, ref rock, input[(int)((i) % input.Length)] == '>');
+            newRock = DropRock(grid, ref rock);
+            if (newRock) droppedRocks++;
+        }
+
+        //inputPos = (inputPos + rocksToDrop) % input.Length;
+        return grid.Keys.Max() + 1;
+    }
+
     public string SolvePart2(string input)
     {
-        return $"{string.Empty}";
+        int WIDTH = 6;
+
+        // x positions embedded, just add correct y ordinate
+        var rockShapes = new Point[][] {
+            new Point[] { (2,0), (3,0), (4,0), (5,0) },
+            new Point[] { (2,1), (3,0), (3,1), (3,2), (4,1) },
+            new Point[] { (2,0), (3,0), (4,0), (4,1), (4,2) },
+            new Point[] { (2,0), (2,1), (2,2), (2,3) },
+            new Point[] { (2,0), (2,1), (3,0), (3,1) },
+        };
+
+        int repeat = input.Length * rockShapes.Length;
+
+        Dictionary<int, HashSet<int>> grid = new() { { -1, new() { 0, 1, 2, 3, 4, 5, 6 } } };
+
+        Point[] rock = Array.Empty<Point>();
+        bool newRock = true;
+        long inputPos = 0;
+        long shapeIndex = 0;
+
+        long rocksToDropRemaining = 1000000000000;
+
+        // FIRST RUN THROUGH
+        (long initToalRows, long rocksAdded) = DropUntilIts(repeat, grid, input, ref rock, ref newRock, ref inputPos, ref shapeIndex);
+
+        rocksToDropRemaining -= rocksAdded;
+
+        Console.WriteLine($"Drops {rocksAdded} and adds {initToalRows} rows");
+
+
+        // Second time and after are all the same
+        (int newTotalRows, rocksAdded) = DropUntilIts(repeat, grid, input, ref rock, ref newRock, ref inputPos, ref shapeIndex);
+
+        long rowsAdded = newTotalRows - initToalRows;
+        long timesToRepeat = rocksToDropRemaining / rocksAdded;
+        long totalRows = initToalRows + timesToRepeat * rowsAdded;
+
+        Console.WriteLine($"Every period of {repeat} drops {rocksAdded} and adds {rowsAdded} rows");
+        Console.WriteLine($"Need {timesToRepeat} period");
+
+        // now just remaining left to do
+        long finalRocksToAdd = rocksToDropRemaining % rocksAdded;
+
+        long finalTotalRows = DropUntilRocks(finalRocksToAdd, grid, input, ref rock, ref newRock, ref inputPos, ref shapeIndex);
+
+        finalTotalRows -= newTotalRows;
+
+        Console.WriteLine($"Need to drop {finalRocksToAdd} rocks after the periods");
+        Console.WriteLine($"Final total rows: {finalTotalRows}. (Added to the old total, {totalRows})");
+
+        return $"{totalRows + finalTotalRows}";
+
+        // 1577664267464 too low
     }
 }
