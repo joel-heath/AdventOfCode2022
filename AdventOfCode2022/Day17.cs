@@ -233,7 +233,5 @@ internal class Day17 : IDay
         Console.WriteLine($"Final total rows: {finalTotalRows}. (Added to the old total, {totalRows})");
 
         return $"{totalRows + finalTotalRows}";
-
-        // 1577664267464 too low
     }
 }
