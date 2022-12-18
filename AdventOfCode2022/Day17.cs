@@ -120,7 +120,7 @@ internal class Day17 : IDay
             if (newRock)
             {
                 //Console.WriteLine($"Rock {s}");
-                rock = rockShapes[s++ % rockShapes.Length].Select(p => p + (0, yLevel + 4)).ToArray();
+                rock = RockShapes[s++ % RockShapes.Length].Select(p => p + (0, yLevel + 4)).ToArray();
                 newRock = false;
             }
 
@@ -132,7 +132,7 @@ internal class Day17 : IDay
         return $"{grid.Keys.Max() + 1}";
     }
 
-    static Point[][] rockShapes = new Point[][] {
+    static readonly Point[][] RockShapes = new Point[][] {
             new Point[] { (2,0), (3,0), (4,0), (5,0) },
             new Point[] { (2,1), (3,0), (3,1), (3,2), (4,1) },
             new Point[] { (2,0), (3,0), (4,0), (4,1), (4,2) },
@@ -147,7 +147,7 @@ internal class Day17 : IDay
         {
             int yLevel = grid.Keys.Max();
             if (newRock)
-                rock = rockShapes[shapeIndex++ % rockShapes.Length].Select(p => p + (0, yLevel + 4)).ToArray();
+                rock = RockShapes[shapeIndex++ % RockShapes.Length].Select(p => p + (0, yLevel + 4)).ToArray();
             //newRock = false;
 
             PushRock(grid, ref rock, input[(int)((i + inputPos) % input.Length)] == '>');
@@ -159,7 +159,7 @@ internal class Day17 : IDay
         return (grid.Keys.Max() + 1, droppedRocks);
     }
 
-    static long DropUntilRocks(long rocksToDrop, Dictionary<int, HashSet<int>> grid, string input, ref Point[] rock, ref bool newRock, ref long inputPos, ref long shapeIndex)
+    static long DropUntilRocks(long rocksToDrop, Dictionary<int, HashSet<int>> grid, string input, ref Point[] rock, ref bool newRock, ref long shapeIndex)
     {
         int droppedRocks = 0;
         for (long i = 0; droppedRocks < rocksToDrop; i++)
@@ -167,7 +167,7 @@ internal class Day17 : IDay
             int yLevel = grid.Keys.Max();
             if (newRock)
             {
-                rock = rockShapes[shapeIndex++ % rockShapes.Length].Select(p => p + (0, yLevel + 4)).ToArray();
+                rock = RockShapes[shapeIndex++ % RockShapes.Length].Select(p => p + (0, yLevel + 4)).ToArray();
             }
             //newRock = false;
 
@@ -182,8 +182,6 @@ internal class Day17 : IDay
 
     public string SolvePart2(string input)
     {
-        int WIDTH = 6;
-
         // x positions embedded, just add correct y ordinate
         var rockShapes = new Point[][] {
             new Point[] { (2,0), (3,0), (4,0), (5,0) },
@@ -225,7 +223,7 @@ internal class Day17 : IDay
         // now just remaining left to do
         long finalRocksToAdd = rocksToDropRemaining % rocksAdded;
 
-        long finalTotalRows = DropUntilRocks(finalRocksToAdd, grid, input, ref rock, ref newRock, ref inputPos, ref shapeIndex);
+        long finalTotalRows = DropUntilRocks(finalRocksToAdd, grid, input, ref rock, ref newRock, ref shapeIndex);
 
         finalTotalRows -= newTotalRows;
 

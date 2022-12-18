@@ -20,81 +20,29 @@ internal partial class Day16 : IDay
     public int Day => 16;
     public Dictionary<string, string> UnitTestsP1 => new()
     {
-        { "Valve AA has flow rate=0; tunnels lead to valves DD, II, BB\r\nValve BB has flow rate=13; tunnels lead to valves CC, AA\r\nValve CC has flow rate=2; tunnels lead to valves DD, BB\r\nValve DD has flow rate=20; tunnels lead to valves CC, AA, EE\r\nValve EE has flow rate=3; tunnels lead to valves FF, DD\r\nValve FF has flow rate=0; tunnels lead to valves EE, GG\r\nValve GG has flow rate=0; tunnels lead to valves FF, HH\r\nValve HH has flow rate=22; tunnel leads to valve GG\r\nValve II has flow rate=0; tunnels lead to valves AA, JJ\r\nValve JJ has flow rate=21; tunnel leads to valve II", "1651" }
+        { "Valve AA has flow rate=0; tunnels lead to valves DD, II, BB\r\nValve BB has flow rate=13; tunnels lead to valves CC, AA\r\nValve CC has flow rate=2; tunnels lead to valves DD, BB\r\nValve DD has flow rate=20; tunnels lead to valves CC, AA, EE\r\nValve EE has flow rate=3; tunnels lead to valves FF, DD\r\nValve FF has flow rate=0; tunnels lead to valves EE, GG\r\nValve GG has flow rate=0; tunnels lead to valves FF, HH\r\nValve HH has flow rate=22; tunnel leads to valve GG\r\nValve II has flow rate=0; tunnels lead to valves AA, JJ\r\nValve JJ has flow rate=21; tunnel leads to valve II", "1651" },
+        { "Valve TM has flow rate=3; tunnels lead to valves WB, PE, DX, TK, CH\r\nValve ST has flow rate=21; tunnels lead to valves NS, DE, UX, XU\r\nValve IX has flow rate=0; tunnels lead to valves DK, LR\r\nValve OG has flow rate=0; tunnels lead to valves MN, FK\r\nValve FR has flow rate=0; tunnels lead to valves JQ, GS\r\nValve HU has flow rate=0; tunnels lead to valves TJ, XX\r\nValve WC has flow rate=15; tunnel leads to valve TJ\r\nValve JT has flow rate=0; tunnels lead to valves OV, AA\r\nValve DW has flow rate=0; tunnels lead to valves FK, AA\r\nValve RG has flow rate=0; tunnels lead to valves PS, DK\r\nValve JQ has flow rate=14; tunnels lead to valves VM, FR\r\nValve XX has flow rate=5; tunnels lead to valves GP, MN, WB, LM, HU\r\nValve IN has flow rate=11; tunnels lead to valves OK, GS, DU\r\nValve LR has flow rate=7; tunnels lead to valves IX, NR, YY, HZ, PR\r\nValve TK has flow rate=0; tunnels lead to valves TM, OV\r\nValve VM has flow rate=0; tunnels lead to valves KQ, JQ\r\nValve IC has flow rate=0; tunnels lead to valves FK, DU\r\nValve CH has flow rate=0; tunnels lead to valves EZ, TM\r\nValve OV has flow rate=10; tunnels lead to valves YW, JT, NN, TK\r\nValve KQ has flow rate=17; tunnels lead to valves VM, YW, CY\r\nValve NR has flow rate=0; tunnels lead to valves FK, LR\r\nValve MN has flow rate=0; tunnels lead to valves OG, XX\r\nValve YY has flow rate=0; tunnels lead to valves LR, LM\r\nValve OK has flow rate=0; tunnels lead to valves CY, IN\r\nValve DK has flow rate=20; tunnels lead to valves FA, RG, IX\r\nValve CY has flow rate=0; tunnels lead to valves KQ, OK\r\nValve PR has flow rate=0; tunnels lead to valves DX, LR\r\nValve DE has flow rate=0; tunnels lead to valves ST, EL\r\nValve TJ has flow rate=0; tunnels lead to valves WC, HU\r\nValve NS has flow rate=0; tunnels lead to valves WU, ST\r\nValve PE has flow rate=0; tunnels lead to valves TM, XO\r\nValve DU has flow rate=0; tunnels lead to valves IN, IC\r\nValve DX has flow rate=0; tunnels lead to valves TM, PR\r\nValve EQ has flow rate=0; tunnels lead to valves AA, GP\r\nValve AA has flow rate=0; tunnels lead to valves JT, EZ, HZ, DW, EQ\r\nValve WB has flow rate=0; tunnels lead to valves TM, XX\r\nValve PF has flow rate=23; tunnels lead to valves BP, WU\r\nValve FJ has flow rate=19; tunnels lead to valves DO, TY, NN, PS\r\nValve GP has flow rate=0; tunnels lead to valves XX, EQ\r\nValve FK has flow rate=4; tunnels lead to valves DW, XO, OG, IC, NR\r\nValve DO has flow rate=0; tunnels lead to valves XU, FJ\r\nValve XO has flow rate=0; tunnels lead to valves FK, PE\r\nValve PS has flow rate=0; tunnels lead to valves RG, FJ\r\nValve MD has flow rate=25; tunnel leads to valve BP\r\nValve EZ has flow rate=0; tunnels lead to valves CH, AA\r\nValve GS has flow rate=0; tunnels lead to valves IN, FR\r\nValve XU has flow rate=0; tunnels lead to valves DO, ST\r\nValve WU has flow rate=0; tunnels lead to valves PF, NS\r\nValve YW has flow rate=0; tunnels lead to valves OV, KQ\r\nValve HZ has flow rate=0; tunnels lead to valves LR, AA\r\nValve TY has flow rate=0; tunnels lead to valves FJ, EL\r\nValve BP has flow rate=0; tunnels lead to valves MD, PF\r\nValve EL has flow rate=18; tunnels lead to valves DE, TY\r\nValve UX has flow rate=0; tunnels lead to valves FA, ST\r\nValve FA has flow rate=0; tunnels lead to valves UX, DK\r\nValve NN has flow rate=0; tunnels lead to valves OV, FJ\r\nValve LM has flow rate=0; tunnels lead to valves XX, YY", "2119" }
+
     };
     public Dictionary<string, string> UnitTestsP2 => new()
     {
-        { "Valve AA has flow rate=0; tunnels lead to valves DD, II, BB\r\nValve BB has flow rate=13; tunnels lead to valves CC, AA\r\nValve CC has flow rate=2; tunnels lead to valves DD, BB\r\nValve DD has flow rate=20; tunnels lead to valves CC, AA, EE\r\nValve EE has flow rate=3; tunnels lead to valves FF, DD\r\nValve FF has flow rate=0; tunnels lead to valves EE, GG\r\nValve GG has flow rate=0; tunnels lead to valves FF, HH\r\nValve HH has flow rate=22; tunnel leads to valve GG\r\nValve II has flow rate=0; tunnels lead to valves AA, JJ\r\nValve JJ has flow rate=21; tunnel leads to valve II", "1707" }
+        { "Valve AA has flow rate=0; tunnels lead to valves DD, II, BB\r\nValve BB has flow rate=13; tunnels lead to valves CC, AA\r\nValve CC has flow rate=2; tunnels lead to valves DD, BB\r\nValve DD has flow rate=20; tunnels lead to valves CC, AA, EE\r\nValve EE has flow rate=3; tunnels lead to valves FF, DD\r\nValve FF has flow rate=0; tunnels lead to valves EE, GG\r\nValve GG has flow rate=0; tunnels lead to valves FF, HH\r\nValve HH has flow rate=22; tunnel leads to valve GG\r\nValve II has flow rate=0; tunnels lead to valves AA, JJ\r\nValve JJ has flow rate=21; tunnel leads to valve II", "1707" },
+        //{ "Valve TM has flow rate=3; tunnels lead to valves WB, PE, DX, TK, CH\r\nValve ST has flow rate=21; tunnels lead to valves NS, DE, UX, XU\r\nValve IX has flow rate=0; tunnels lead to valves DK, LR\r\nValve OG has flow rate=0; tunnels lead to valves MN, FK\r\nValve FR has flow rate=0; tunnels lead to valves JQ, GS\r\nValve HU has flow rate=0; tunnels lead to valves TJ, XX\r\nValve WC has flow rate=15; tunnel leads to valve TJ\r\nValve JT has flow rate=0; tunnels lead to valves OV, AA\r\nValve DW has flow rate=0; tunnels lead to valves FK, AA\r\nValve RG has flow rate=0; tunnels lead to valves PS, DK\r\nValve JQ has flow rate=14; tunnels lead to valves VM, FR\r\nValve XX has flow rate=5; tunnels lead to valves GP, MN, WB, LM, HU\r\nValve IN has flow rate=11; tunnels lead to valves OK, GS, DU\r\nValve LR has flow rate=7; tunnels lead to valves IX, NR, YY, HZ, PR\r\nValve TK has flow rate=0; tunnels lead to valves TM, OV\r\nValve VM has flow rate=0; tunnels lead to valves KQ, JQ\r\nValve IC has flow rate=0; tunnels lead to valves FK, DU\r\nValve CH has flow rate=0; tunnels lead to valves EZ, TM\r\nValve OV has flow rate=10; tunnels lead to valves YW, JT, NN, TK\r\nValve KQ has flow rate=17; tunnels lead to valves VM, YW, CY\r\nValve NR has flow rate=0; tunnels lead to valves FK, LR\r\nValve MN has flow rate=0; tunnels lead to valves OG, XX\r\nValve YY has flow rate=0; tunnels lead to valves LR, LM\r\nValve OK has flow rate=0; tunnels lead to valves CY, IN\r\nValve DK has flow rate=20; tunnels lead to valves FA, RG, IX\r\nValve CY has flow rate=0; tunnels lead to valves KQ, OK\r\nValve PR has flow rate=0; tunnels lead to valves DX, LR\r\nValve DE has flow rate=0; tunnels lead to valves ST, EL\r\nValve TJ has flow rate=0; tunnels lead to valves WC, HU\r\nValve NS has flow rate=0; tunnels lead to valves WU, ST\r\nValve PE has flow rate=0; tunnels lead to valves TM, XO\r\nValve DU has flow rate=0; tunnels lead to valves IN, IC\r\nValve DX has flow rate=0; tunnels lead to valves TM, PR\r\nValve EQ has flow rate=0; tunnels lead to valves AA, GP\r\nValve AA has flow rate=0; tunnels lead to valves JT, EZ, HZ, DW, EQ\r\nValve WB has flow rate=0; tunnels lead to valves TM, XX\r\nValve PF has flow rate=23; tunnels lead to valves BP, WU\r\nValve FJ has flow rate=19; tunnels lead to valves DO, TY, NN, PS\r\nValve GP has flow rate=0; tunnels lead to valves XX, EQ\r\nValve FK has flow rate=4; tunnels lead to valves DW, XO, OG, IC, NR\r\nValve DO has flow rate=0; tunnels lead to valves XU, FJ\r\nValve XO has flow rate=0; tunnels lead to valves FK, PE\r\nValve PS has flow rate=0; tunnels lead to valves RG, FJ\r\nValve MD has flow rate=25; tunnel leads to valve BP\r\nValve EZ has flow rate=0; tunnels lead to valves CH, AA\r\nValve GS has flow rate=0; tunnels lead to valves IN, FR\r\nValve XU has flow rate=0; tunnels lead to valves DO, ST\r\nValve WU has flow rate=0; tunnels lead to valves PF, NS\r\nValve YW has flow rate=0; tunnels lead to valves OV, KQ\r\nValve HZ has flow rate=0; tunnels lead to valves LR, AA\r\nValve TY has flow rate=0; tunnels lead to valves FJ, EL\r\nValve BP has flow rate=0; tunnels lead to valves MD, PF\r\nValve EL has flow rate=18; tunnels lead to valves DE, TY\r\nValve UX has flow rate=0; tunnels lead to valves FA, ST\r\nValve FA has flow rate=0; tunnels lead to valves UX, DK\r\nValve NN has flow rate=0; tunnels lead to valves OV, FJ\r\nValve LM has flow rate=0; tunnels lead to valves XX, YY", "8" }
     };
 
     class Valve
     {
         public readonly int FlowRate;
         public string[] AdjacentValves;
-        public Dictionary<Valve, int> Tunnels;
+        public Dictionary<Valve, int> Tunnels = new();
+        public readonly string Name;
 
-        public Valve(int flowrate, string[] adjactents)
+        public Valve(string name, int flowrate, string[] adjactents)
         {
+            Name = name;
             FlowRate = flowrate;
             AdjacentValves = adjactents;
         }
-    }
-
-    class Route
-    {
-        public List<Valve> ValvesOpened;
-        public List<Valve> ValvesVisited;
-        public int Score;
-        public int TimeRemaining;
-
-        public Route ToRoute()
-        {
-            Route route = new()
-            {
-                ValvesOpened = this.ValvesOpened.ToList(),
-                ValvesVisited = this.ValvesVisited.ToList(),
-                TimeRemaining = this.TimeRemaining,
-                Score = this.Score
-            };
-
-            return route;
-        }
-
-        public static bool operator ==(Route a, Route b)
-        {
-            if (a.ValvesOpened.Count != b.ValvesOpened.Count) return false;
-
-            for (int i = 0; i < a.ValvesOpened.Count; i++)
-            {
-                if (a.ValvesOpened[i] != b.ValvesOpened[i]) return false;
-            }
-
-            return true;
-        }
-
-        public static bool operator !=(Route a, Route b) => !(a == b);
-
-        public override bool Equals(object? obj)
-        {
-            if (obj is null)
-                return false;
-
-            if (ReferenceEquals(this, obj))
-                return true;
-
-            if (ValvesOpened.Count != ((Route)obj).ValvesOpened.Count)
-                return false;
-
-            for (int i = 0; i < ValvesOpened.Count; i++)
-            {
-                if (ValvesOpened[i] != ((Route)obj).ValvesOpened[i])
-                    return false;
-            }
-
-            return true;
-        }
-
-        public override int GetHashCode() => HashCode.Combine(ValvesOpened);
     }
 
     static Dictionary<string, Valve> ParseInput(string input)
@@ -115,7 +63,7 @@ internal partial class Day16 : IDay
 
             nodes.Add((line[0], tunnels));
 
-            valves.Add(line[0], new Valve(int.Parse(line[1]), tunnels));
+            valves.Add(line[0], new Valve(line[0], int.Parse(line[1]), tunnels));
         }
 
         foreach (var v in valves)
@@ -175,88 +123,46 @@ internal partial class Day16 : IDay
         return closed;
     }
 
-    static int CalculateScore(string current, Dictionary<string, Valve> valves, HashSet<string> visited, string previous, int timeRemaining, int bestSoFar)
+    public string SolvePart1(string input)
+        => $"{CalculateScore(ParseInput(input), new() { "AA" }, ("AA", 30), ("XXX", 0), new())}";
+
+    static int bestSoFar = 0;
+    static int CalculateScore(Dictionary<string, Valve> valves, HashSet<string> opened, (string pos, int time) p1, (string pos, int time) p2, Dictionary<string, int> cache)
     {
-        if (timeRemaining <= 0)
-        {
-            Console.WriteLine($"Times up! Best So far: {bestSoFar}");
-            return 0;
-        }
+        var cacheKey = $"{string.Join(',', opened.Order())},{p1},{p2}";
+        if (cache.TryGetValue(cacheKey, out int score))
+            return score;
 
-        if (!visited.Contains(current) && current != "AA")
-        {
-            int score = valves[current].FlowRate * (timeRemaining - 1); //+ CalculateScore(current, valves, visited.Append(current).ToHashSet(), current, timeRemaining - 1, bestSoFar);
-            bestSoFar = score > bestSoFar ? score : bestSoFar;
-        }
+        (var player, var other) = p1.time >= p2.time ? (p1, p2) : (p2, p1);
 
-        foreach (Valve v in valves[current].Tunnels.Keys)
-        {
-            if (valves[previous] == v) continue;
-            string valveName = valves.Where(k => k.Value == v).First().Key;
-
-            int score = CalculateScore(valveName, valves, visited.Append(previous).ToHashSet(), current, timeRemaining - valves[current].Tunnels[v], bestSoFar);
-            bestSoFar = score > bestSoFar ? score : bestSoFar;
-        }
-
-        return bestSoFar;
-    }
-
-    /*
-    static int AttemptRoute(Route route, Valve valve)
-    {
         int max = 0;
+        Valve current = valves[player.pos];
 
-        if (route.TimeRemaining > 0)
+        foreach (var kvp in current.Tunnels.Where(t => !opened.Contains(t.Key.Name) && player.time > t.Value + 1))
         {
-            if (!route.ValvesOpened.Contains(valve) && valve.FlowRate > 0)
-            {
-                Route newRoute = route.ToRoute();
-                newRoute.TimeRemaining--;
-                newRoute.ValvesVisited.Add(valve);
-                newRoute.ValvesOpened.Add(valve);
+            Valve valve = kvp.Key;
+            int distance = kvp.Value;
+            string name = valve.Name;
+            int remainingTime = player.time - distance - 1;
 
-                int score = valve.FlowRate * newRoute.TimeRemaining + AttemptRoute(newRoute, valve);
-                if (score > max) max = score;
-            }
+            int flow = valve.FlowRate * remainingTime;
 
-            foreach (Valve v in valve.ConnectedValves)
-            {
-                if (route.ValvesVisited[^1] == v) continue;
-
-                Route newRoute = route.ToRoute();
-                newRoute.TimeRemaining--;
-                newRoute.ValvesVisited.Add(valve);
-
-                int score = AttemptRoute(newRoute, v);
-                if (score > max) max = score;
-            }
+            max = Math.Max(flow + CalculateScore(valves, new(opened) { name }, (name, remainingTime), other, cache), max);
+            max = Math.Max(flow + CalculateScore(valves, new(opened) { name }, (name, remainingTime), ("XXX",0), cache), max);
         }
 
+        if (max > bestSoFar)
+        {
+            bestSoFar = max;
+            Console.WriteLine(max);
+        }
+        cache[cacheKey] = max;
         return max;
     }
-    */
 
-    public string SolvePart1(string input)
-    {
-        var valves = ParseInput(input);
-        /*
-        Valve currentValve = valves.Where(v => v.Name == "AA").First();
-
-        Route route = new();
-        route.TimeRemaining = 30;
-        route.ValvesOpened = new();
-        route.ValvesVisited = new() { currentValve };
-
-        return $"{AttemptRoute(route, currentValve)}";
-        */
-
-        return $"{CalculateScore("AA", valves, new(), "AA", 30, 0)}";
-    }
 
     public string SolvePart2(string input)
-    {
-        return string.Empty;
-    }
+        => $"{CalculateScore(ParseInput(input), new() { "AA" }, ("AA", 26), ("AA", 26), new())}";
 
     [GeneratedRegex("Valve (\\w+) has flow rate=(\\d+); tunnels? leads? to valves?( \\w+)((?:, \\w+)*)")]
     private static partial Regex InputParse();

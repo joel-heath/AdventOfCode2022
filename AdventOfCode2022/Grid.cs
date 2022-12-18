@@ -161,3 +161,46 @@ class Point
 
     public override string ToString() => $"({X}, {Y})";
 }
+
+class Coord
+{
+    private readonly int x, y, z;
+    public int X { get => x; }
+    public int Y { get => y; }
+    public int Z { get => z; }
+
+    public Coord(int x, int y, int z)
+    {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
+    public static implicit operator Coord((int X, int Y, int Z) coords) => new(coords.X, coords.Y, coords.Z);
+
+    public void Deconstruct(out int x, out int y, out int z)
+    {
+        x = this.x;
+        y = this.y;
+        z = this.z;
+    }
+
+    public int[] Coords() => new int[] { x, y, z };
+
+    public Coord[] Adjacents() => new Coord[] { this + (0, 0, 1), this - (0, 0, 1), this + (0, 1, 0), this - (0, 1, 0), this + (1, 0, 0), this - (1, 0, 0) };
+    //public Coord[] DiagonalAdjacents() => new Coord[] { this + (0, 0, 1), this - (0, 0, 1), this + (0, 1, 0), this - (0, 1, 0), this + (1, 0, 0), this - (1, 0, 0) };
+
+    public static Coord operator +(Coord a, Coord b) => new(a.x + b.x, a.y + b.y, a.z + b.z);
+    public static Coord operator -(Coord a, Coord b) => new(a.x - b.x, a.y - b.y, a.z - b.z);
+    public int this[int index] { get => index == 0 ? x : index == 1 ? y : z; }
+    public override bool Equals(object? obj) => obj is Coord p && p.x.Equals(x) && p.y.Equals(y) && p.Z.Equals(z);
+    public override int GetHashCode() => HashCode.Combine(x, y, z);
+
+    public static bool operator ==(Coord a, Coord b) => (a is null && b is null) || (a is not null && b is not null && a.x == b.x && a.y == b.y && a.z == b.z);
+    public static bool operator !=(Coord a, Coord b) => (a is not null || b is not null) && (a is null || b is null || a.x != b.x || a.y != b.y || a.z != b.z);
+    public static bool operator <(Coord a, Coord b) => (a is not null && b is not null && a.x < b.x && a.y < b.y && a.z < b.z);
+    public static bool operator >(Coord a, Coord b) => (a is not null && b is not null && a.x > b.x && a.y > b.y && a.z > b.z);
+    public static bool operator <=(Coord a, Coord b) => a < b || a == b;
+    public static bool operator >=(Coord a, Coord b) => a > b || a == b;
+    public override string ToString() => $"({x}, {y}, {z})";
+}
