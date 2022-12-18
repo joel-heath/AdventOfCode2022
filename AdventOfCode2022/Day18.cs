@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Threading.Tasks;
+using System.Reflection;
 
 namespace AdventOfCode2022;
 internal class Day18 : IDay
@@ -16,6 +17,7 @@ internal class Day18 : IDay
     };
     public Dictionary<string, string> UnitTestsP2 => new()
     {
+        { "1,1,1\r\n2,1,1", "10" },
         { "2,2,2\r\n1,2,2\r\n3,2,2\r\n2,1,2\r\n2,3,2\r\n2,2,1\r\n2,2,3\r\n2,2,4\r\n2,2,6\r\n1,2,5\r\n3,2,5\r\n2,1,5\r\n2,3,5", "58" }
     };
 
@@ -144,39 +146,72 @@ internal class Day18 : IDay
 
     static List<Coord> AllContained(List<Coord> coords)
     {
-        HashSet<Coord> newCoords = coords.ToHashSet();
+        List<Coord> newCoords = coords.ToList();
 
         Coord upperBound = (newCoords.Max(c => c.X), newCoords.Max(c => c.Y), newCoords.Max(c => c.Z));
         Coord lowerBound = (newCoords.Min(c => c.X), newCoords.Min(c => c.Y), newCoords.Min(c => c.Z));
 
-        foreach (Coord coord in coords)
+        for (int i = 0; i < newCoords.Count; i++)
         {
-            foreach (Coord a in coord.Adjacents())
-            {
-                try
-                {
-                    if (a.Z >= coords.Where(c => c.X == a.X && c.Y == a.Y).Max(c => c.Z) ||
-                        a.Z <= coords.Where(c => c.X == a.X && c.Y == a.Y).Min(c => c.Z) ||
-                        a.Y >= coords.Where(c => c.Z == a.Z && c.X == a.X).Max(c => c.Y) ||
-                        a.Y <= coords.Where(c => c.Z == a.Z && c.X == a.X).Min(c => c.Y) ||
-                        a.X >= coords.Where(c => c.Z == a.Z && c.Y == a.Y).Max(c => c.X) ||
-                        a.X <= coords.Where(c => c.Z == a.Z && c.Y == a.Y).Min(c => c.X) ||
-                        a.X >= upperBound.X || a.Y >= upperBound.Y || a.Z >= upperBound.Z ||
-                        a.X <= lowerBound.X || a.Y <= lowerBound.Y || a.Z <= lowerBound.Z ||
-                        newCoords.Contains(a)) continue;
-                }
-                catch { continue; }
+            Coord p = newCoords[i];
 
-                newCoords.Add(a);
-                Console.WriteLine($"Added missing co-ordinate {a}");
+            //if (p.Z > newCoords.Where(c => c.X == p.X && c.Y == p.Y).DefaultIfEmpty(new Coord(0, 0, int.MinValue)).Max(c => c.Z)) continue;
+            //if (p.Z < newCoords.Where(c => c.X == p.X && c.Y == p.Y).DefaultIfEmpty(new Coord(0, 0, int.MaxValue)).Min(c => c.Z)) continue;
+
+            //if (p.Y > newCoords.Where(c => c.Z == p.Z && c.X == p.X).DefaultIfEmpty(new Coord(0, int.MinValue, 0)).Max(c => c.Y)) continue;
+            //if (p.Y < newCoords.Where(c => c.Z == p.Z && c.X == p.X).DefaultIfEmpty(new Coord(0, int.MaxValue, 0)).Min(c => c.Y)) continue;
+
+            //if (p.X > newCoords.Where(c => c.Z == p.Z && c.Y == p.Y).DefaultIfEmpty(new Coord(int.MinValue, 0, 0)).Max(c => c.X)) continue;
+            //if (p.X < newCoords.Where(c => c.Z == p.Z && c.Y == p.Y).DefaultIfEmpty(new Coord(int.MaxValue, 0, 0)).Min(c => c.X)) continue;
+
+            //if (p.X > upperBound.X || p.Y > upperBound.Y || p.Z > upperBound.Z) continue;
+            //if (p.X < lowerBound.X || p.Y < lowerBound.Y || p.Z < lowerBound.Z) continue;
+
+
+            foreach (Coord a in p.Adjacents())
+            {
+                if (newCoords.Contains(a)) continue;
+
+                /*
+                if (a.Z > newCoords.Where(c => c.X == a.X && c.Y == a.Y).DefaultIfEmpty(new Coord(0, 0, int.MaxValue)).Max(c => c.Z)) continue;
+                if (a.Z < newCoords.Where(c => c.X == a.X && c.Y == a.Y).DefaultIfEmpty(new Coord(0, 0, int.MinValue)).Min(c => c.Z)) continue;
+
+                if (a.Y > newCoords.Where(c => c.Z == a.Z && c.X == a.X).DefaultIfEmpty(new Coord(0, int.MaxValue, 0)).Max(c => c.Y)) continue;
+                if (a.Y < newCoords.Where(c => c.Z == a.Z && c.X == a.X).DefaultIfEmpty(new Coord(0, int.MinValue, 0)).Min(c => c.Y)) continue;
+
+                if (a.X > newCoords.Where(c => c.Z == a.Z && c.Y == a.Y).DefaultIfEmpty(new Coord(int.MaxValue, 0, 0)).Max(c => c.X)) continue;
+                if (a.X < newCoords.Where(c => c.Z == a.Z && c.Y == a.Y).DefaultIfEmpty(new Coord(int.MinValue, 0, 0)).Min(c => c.X)) continue;
+
+                if (a.X > upperBound.X || a.Y > upperBound.Y || a.Z > upperBound.Z) continue;
+                if (a.X < lowerBound.X || a.Y < lowerBound.Y || a.Z < lowerBound.Z) continue;
+                */
+
+
+                IEnumerable<Coord> sameX = newCoords.Where(c => c.X == a.X);
+                IEnumerable<Coord> sameY = newCoords.Where(c => c.Y == a.Y);
+                IEnumerable<Coord> sameZ = newCoords.Where(c => c.Z == a.Z);
+
+                IEnumerable<int> similarX = sameY.Intersect(sameZ).Select(c => c.X).DefaultIfEmpty(int.MaxValue);
+                IEnumerable<int> similarY = sameX.Intersect(sameZ).Select(c => c.Y).DefaultIfEmpty(int.MaxValue);
+                IEnumerable<int> similarZ = sameX.Intersect(sameY).Select(c => c.Z).DefaultIfEmpty(int.MaxValue);
+
+
+                if (a.X < similarX.Max() && a.X > similarX.Min() &&
+                    a.Y < similarY.Max() && a.Y > similarY.Min() &&
+                    a.Z < similarZ.Max() && a.Z > similarZ.Min())
+                {
+                    newCoords.Add(a);
+                    Console.WriteLine($"Added missing co-ordinate {a}");
+                }
             }
         }
 
-        return newCoords.ToList();
+        return newCoords;
     }
 
     static int SurfaceArea(List<Coord> coords)
     {
+        
         int surfaceArea = coords.Count * 6;
         for (int i = 0; i < coords.Count - 1; i++)
         {
@@ -185,6 +220,19 @@ internal class Day18 : IDay
                 surfaceArea -= Intersect(coords[i], coords[j]);
             }
         }
+        
+        /*
+        int surfaceArea = coords.Count * 6;
+        for (int i = 0; i < coords.Count; i++)
+        {
+            for (int j = 0; j < coords.Count; j++)
+            {
+                if (i == j) continue;
+                surfaceArea -= Intersect(coords[i], coords[j]);
+            }
+        }
+        */
+
 
         return surfaceArea;
     }
@@ -203,10 +251,7 @@ internal class Day18 : IDay
     }
 
     public string SolvePart2(string input)
-        => $"{SurfaceArea(SuperContained(ParseInput(input)))}";
+        => $"{SurfaceArea(AllContained(ParseInput(input)))}";
 
-    // Immediately contained: 1364
-    // Too high 2698
-    // Not right 2430
-    // Still incorrect 2048
+    
 }
