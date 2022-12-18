@@ -11,6 +11,8 @@ using System.ComponentModel;
 using System.Xml.Schema;
 using System.Reflection.Metadata.Ecma335;
 using System.Runtime.InteropServices;
+using System.Windows.Markup;
+using System.Data;
 
 namespace AdventOfCode2022;
 internal partial class Day16 : IDay
@@ -121,6 +123,17 @@ internal partial class Day16 : IDay
             v.Value.Tunnels = Dijkstras(v.Value, valves);
         }
 
+        IEnumerable<string> uselessValves = valves.Where(v => v.Value.FlowRate == 0 && v.Key != "AA").Select(kvp => kvp.Key);
+        foreach (string valveName in uselessValves)
+        {
+            Valve valve = valves[valveName];
+            valves.Remove(valveName);
+            foreach (var v in valves)
+            {
+                v.Value.Tunnels.Remove(valve);
+            }
+        }
+
         return valves;
     }
 
@@ -160,6 +173,32 @@ internal partial class Day16 : IDay
         closed.Remove(start);
 
         return closed;
+    }
+
+    static int CalculateScore(string current, Dictionary<string, Valve> valves, HashSet<string> visited, string previous, int timeRemaining, int bestSoFar)
+    {
+        if (timeRemaining <= 0)
+        {
+            Console.WriteLine($"Times up! Best So far: {bestSoFar}");
+            return 0;
+        }
+
+        if (!visited.Contains(current) && current != "AA")
+        {
+            int score = valves[current].FlowRate * (timeRemaining - 1); //+ CalculateScore(current, valves, visited.Append(current).ToHashSet(), current, timeRemaining - 1, bestSoFar);
+            bestSoFar = score > bestSoFar ? score : bestSoFar;
+        }
+
+        foreach (Valve v in valves[current].Tunnels.Keys)
+        {
+            if (valves[previous] == v) continue;
+            string valveName = valves.Where(k => k.Value == v).First().Key;
+
+            int score = CalculateScore(valveName, valves, visited.Append(previous).ToHashSet(), current, timeRemaining - valves[current].Tunnels[v], bestSoFar);
+            bestSoFar = score > bestSoFar ? score : bestSoFar;
+        }
+
+        return bestSoFar;
     }
 
     /*
@@ -211,7 +250,7 @@ internal partial class Day16 : IDay
         return $"{AttemptRoute(route, currentValve)}";
         */
 
-        return "hey i just met you and this is crazy but heres my number so call me maybe";
+        return $"{CalculateScore("AA", valves, new(), "AA", 30, 0)}";
     }
 
     public string SolvePart2(string input)
