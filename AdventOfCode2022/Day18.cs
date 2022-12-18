@@ -32,23 +32,32 @@ internal class Day18 : IDay
     {
         int area = 0;
         Coord pond = (lava.Max(c => c.X) + 1, lava.Max(c => c.Y) + 1, lava.Max(c => c.Z) + 1);
-        Queue<Coord> queue = new(new Coord[] { (-1, -1, -1) });
-        HashSet<Coord> closed = new();
+        Queue<Coord> queue = new(new Coord[] {(-1, -1, -1)});
+        HashSet<Coord> water = new(new Coord[] {(-1, -1, -1)});
 
+        while (queue.TryDequeue(out var current))
+        {
+            foreach (var point in current.Adjacents().Where(p => p <= pond && p >= (-1, -1, -1) && !water.Contains(p)))
+            {
+                if (lava.Contains(point)) area++;
+                else { queue.Enqueue(point); water.Add(point); }
+            }
+        }
+        /*
         while (queue.Count > 0)
         {
             Coord current = queue.Dequeue();
-            closed.Add(current);
+            water.Add(current);
 
             foreach (Coord point in current.Adjacents())
             {
                 if (point <= pond && point >= (-1, -1, -1))
                 {
                     if (lava.Contains(point)) area++;
-                    else if (!closed.Contains(point) && !queue.Contains(point)) queue.Enqueue(point);
+                    else if (!water.Contains(point) && !queue.Contains(point)) queue.Enqueue(point);
                 }
             }
-        }
+        }*/
 
         return area;
     }

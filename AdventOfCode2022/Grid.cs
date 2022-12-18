@@ -200,7 +200,7 @@ class Coord
     public static bool operator !=(Coord a, Coord b) => (a is not null || b is not null) && (a is null || b is null || a.x != b.x || a.y != b.y || a.z != b.z);
     public static bool operator <(Coord a, Coord b) => (a is not null && b is not null && a.x < b.x && a.y < b.y && a.z < b.z);
     public static bool operator >(Coord a, Coord b) => (a is not null && b is not null && a.x > b.x && a.y > b.y && a.z > b.z);
-    public static bool operator <=(Coord a, Coord b) => a < b || a == b;
-    public static bool operator >=(Coord a, Coord b) => a > b || a == b;
+    public static bool operator <=(Coord a, Coord b) => (a is null && b is null) || (a is not null && b is not null && a.x <= b.x && a.y <= b.y && a.z <= b.z);
+    public static bool operator >=(Coord a, Coord b) => (a is null && b is null) || (a is not null && b is not null && a.x >= b.x && a.y >= b.y && a.z >= b.z);
     public override string ToString() => $"({x}, {y}, {z})";
 }
