@@ -42,12 +42,15 @@ internal partial class Day19 : IDay
                 // buy obsidian
                 if (ore.c - ore.r >= blueprint[3] && clay.c - clay.r >= blueprint[4])
                     max = Math.Max(PlayGame(blueprint, (ore.c - blueprint[3], ore.r), (clay.c - blueprint[4], clay.r), (obsidian.c, obsidian.r + 1), geode, timeRemaining - 1, cache), max);
-
-                // buy clay
-                if (ore.c - ore.r >= blueprint[2])
-                    max = Math.Max(PlayGame(blueprint, (ore.c - blueprint[2], ore.r), (clay.c, clay.r + 1), obsidian, geode, timeRemaining - 1, cache), max);
-
-                // dont bother buying ore if we have tons--bad route
+                
+                // dont bother buying clay if we have tons
+                if (clay.c < 3 * blueprint[4])
+                {
+                    // buy clay
+                    if (ore.c - ore.r >= blueprint[2])
+                        max = Math.Max(PlayGame(blueprint, (ore.c - blueprint[2], ore.r), (clay.c, clay.r + 1), obsidian, geode, timeRemaining - 1, cache), max);
+                }
+                // dont bother buying ore if we have tons
                 if (ore.c < 3 * blueprint[2])
                 {
                     // buy ore
