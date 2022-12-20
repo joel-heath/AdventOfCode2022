@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Collections;
 using System.Collections.Immutable;
+using static AdventOfCode2022.Day12;
 
 namespace AdventOfCode2022;
 internal class Day20 : IDay
@@ -16,31 +17,13 @@ internal class Day20 : IDay
     public int Day => 20;
     public Dictionary<string, string> UnitTestsP1 => new()
     {
-        { "1\r\n2\r\n-3\r\n3\r\n-2\r\n0\r\n4", "3" },
-        //{ "0\r\n0\r\n0\r\n1\r\n0\r\n0\r\n0", "1" },
-        //{ "0\r\n-2\r\n0\r\n0\r\n0\r\n0\r\n0", "-2" },
+        { "1\r\n2\r\n-3\r\n3\r\n-2\r\n0\r\n4", "3" }
     };
     public Dictionary<string, string> UnitTestsP2 => new()
     {
-        { "TestInput", "Output" }
+        { "1\r\n2\r\n-3\r\n3\r\n-2\r\n0\r\n4", "1623178306" }
     };
 
-    /*
-    static LinkedListNode<T> FindAtIndex<T>(LinkedList<T> list, int index)
-    {
-        LinkedListNode<T> previous = list.First!;
-        for (int h = 0; h < index; h++)
-            previous = previous.Next ?? list.First!;
-
-        return previous;
-    }*/
-
-    static int mod(int x, int m)
-    {
-        int r = x % m;
-        return r < 0 ? r + m : r;
-    }
-    /*
     static Queue<LinkedListNode<T>> EnqueueNodes<T>(LinkedList<T> list)
     {
         Queue<LinkedListNode<T>> copy = new();
@@ -54,177 +37,55 @@ internal class Day20 : IDay
         }
 
         return copy;
-    }*/
+    }
 
-    public string ListMethod(string input)
+    public Queue<LinkedListNode<long>> Mix(LinkedList<long> list, Queue<LinkedListNode<long>> dataStream)
     {
-        List<(int value, int trueIndex)> list = input.Split("\r\n").Select((v, i) => (int.Parse(v), i)).ToList();
-        //Console.WriteLine(string.Join(", ", list.Select(t => t.value)));
+        Queue<LinkedListNode<long>> newDataStream = new();
 
-        for (int i = 0; i < list.Count; i++)
+        while (dataStream.TryDequeue(out LinkedListNode<long>? current))
         {
-            var current = list.First(n => n.trueIndex == i);
-            int currIndex = list.IndexOf(current);
-            int newPos = currIndex + current.value;
-            int newIndex = mod(newPos + (newPos >= 0 ? 1 : 0), list.Count);
-
-            list.Insert(newIndex, current);
-            list.RemoveAt(currIndex + (newIndex <= currIndex ? 1 : 0));
-
-            //Console.WriteLine(string.Join(", ", list.Select(t => t.value)));
-        }
+            LinkedListNode<long> previous = current;
             
-
-        int indexOfZero = list.IndexOf(list.First(v => v.value == 0));
-
-        int x = list[(indexOfZero + 1000) % list.Count].value;
-        int y = list[(indexOfZero + 2000) % list.Count].value;
-        int z = list[(indexOfZero + 3000) % list.Count].value;
-
-       
-        Console.WriteLine($"({x}, {y}, {z})");
-
-        //Console.ReadKey();
-        return $"{x+y+z}";
-
-        // -15631 incorrec
-        // -9516 incorrect
-        // 7603 too low
-    }
-
-    static Queue<LinkedListNode<T>> EnqueueNodes<T>(LinkedList<T> list)
-    {
-        Queue<LinkedListNode<T>> copy = new();
-        LinkedListNode<T> current = list.First!;
-
-        copy.Enqueue(current);
-        while (current.Next != null)
-        {
-            current = current.Next;
-            copy.Enqueue(current);
-        }
-
-        return copy;
-    }
-
-    public string LinkedListMethod(string input)
-    {
-        LinkedList<int> list = new(input.Split("\r\n").Select(int.Parse));
-        Queue<LinkedListNode<int>> dataStream = EnqueueNodes(list);
-        LinkedListNode<int>? zero = null;
-
-        while (dataStream.TryDequeue(out LinkedListNode<int>? current))
-        {
-            int digitToMove = current.Value;
-
-            if (digitToMove == 0)
+            if (current.Value > 0)
             {
-                zero = current;
-                continue;
-            }
-
-            LinkedListNode<int> previous = current;
-            if (digitToMove > 0)
-            {
-                for (int h = 0; h <= digitToMove % (list.Count-1); h++)
+                for (int h = 0; h <= current.Value % (list.Count-1); h++)
                     previous = previous.Next ?? list.First!;
 
-                list.AddBefore(previous, digitToMove);
+                newDataStream.Enqueue(list.AddBefore(previous, current.Value));
             }
             else
             {
-                for (int h = 0; h <= Math.Abs(digitToMove) % (list.Count-1); h++)
+                for (int h = 0; h <= Math.Abs(current.Value) % (list.Count-1); h++)
                     previous = previous.Previous ?? list.Last!;
 
-                list.AddAfter(previous, digitToMove);
+                newDataStream.Enqueue(list.AddAfter(previous, current.Value));
             }
 
             list.Remove(current);
-
-            //Console.WriteLine(string.Join(", ", list));
         }
 
-        LinkedListNode<int> node = zero!;
-
-        for (int i = 0; i < 1000; i++)
-            node = node.Next ?? list.First!;
-        int x = node.Value;
-        for (int i = 0; i < 1000; i++)
-            node = node.Next ?? list.First!;
-        int y = node.Value;
-        for (int i = 0; i < 1000; i++)
-            node = node.Next ?? list.First!;
-        int z = node.Value;
-
-        Console.WriteLine($"({x}, {y}, {z})");
-
-        return $"{x + y + z}";
+        return newDataStream;
     }
 
     public string SolvePart1(string input)
     {
-        return $"{LinkedListMethod(input)}";
+        LinkedList<long> list = new(input.Split("\r\n").Select(long.Parse));
+        Mix(list, EnqueueNodes(list));
+
+        List<long> longs = list.ToList();
+        return $"{new int[] { 1000, 2000, 3000 }.Select(n => longs[(n + longs.IndexOf(0)) % longs.Count]).Sum()}";
     }
 
     public string SolvePart2(string input)
     {
+        LinkedList<long> list = new(input.Split("\r\n").Select(n => 811589153 * long.Parse(n)));
+        Queue<LinkedListNode<long>> dataStream = EnqueueNodes(list);
+        for (int i = 0; i < 10; i++)
+            dataStream = Mix(list, dataStream);
 
-        LinkedList<int> list = new(input.Split("\r\n").Select(int.Parse));
-        Queue<LinkedListNode<int>> dataStream = EnqueueNodes(list);
-        LinkedListNode<int>? zero = null;
+        List<long> longs = list.ToList();
 
-        while (dataStream.TryDequeue(out LinkedListNode<int>? current))
-        {
-            int digitToMove = current.Value;
-
-            if (digitToMove == 0)
-            {
-                zero = current;
-                continue;
-            }
-
-            LinkedListNode<int> previous = current;
-            if (digitToMove > 0)
-            {
-                for (int h = 0; h <= digitToMove % (list.Count - 1); h++)
-                    previous = previous.Next ?? list.First!;
-
-                list.AddBefore(previous, digitToMove);
-            }
-            else
-            {
-                for (int h = 0; h <= Math.Abs(digitToMove) % (list.Count - 1); h++)
-                    previous = previous.Previous ?? list.Last!;
-
-                list.AddAfter(previous, digitToMove);
-            }
-
-            list.Remove(current);
-
-            //Console.WriteLine(string.Join(", ", list));
-        }
-
-        LinkedListNode<int> node = zero!;
-
-        for (int i = 0; i < 1000; i++)
-            node = node.Next ?? list.First!;
-        int x = node.Value;
-        for (int i = 0; i < 1000; i++)
-            node = node.Next ?? list.First!;
-        int y = node.Value;
-        for (int i = 0; i < 1000; i++)
-            node = node.Next ?? list.First!;
-        int z = node.Value;
-
-        Console.WriteLine($"({x}, {y}, {z})");
-
-        //Console.ReadKey();
-        return $"{x + y + z}";
-
-        // -15631 incorrec
-        // -9516 incorrect
-        // 7603 too low
-
-
+        return $"{new int[] { 1000, 2000, 3000 }.Select(n => longs[(n + longs.IndexOf(0)) % longs.Count]).Sum()}";
     }
 }
