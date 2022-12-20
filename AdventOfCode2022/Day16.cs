@@ -120,9 +120,6 @@ internal partial class Day16 : IDay
         return closed;
     }
 
-    public string SolvePart1(string input)
-        => $"{CalculateScore(ParseInput(input), new() { "AA" }, ("AA", 30), ("XXX", 0), new())}";
-
     static int CalculateScore(Dictionary<string, Valve> valves, HashSet<string> opened, (string pos, int time) p1, (string pos, int time) p2, Dictionary<string, int> cache)
     {
         var cacheKey = $"{string.Join(',', opened.Order())},{p1},{p2}";
@@ -151,7 +148,8 @@ internal partial class Day16 : IDay
         return max;
     }
 
-
+    public string SolvePart1(string input)
+        => $"{CalculateScore(ParseInput(input), new() { "AA" }, ("AA", 30), ("XXX", 0), new())}";
     public string SolvePart2(string input)
         => $"{CalculateScore(ParseInput(input), new() { "AA" }, ("AA", 26), ("AA", 26), new())}";
 
