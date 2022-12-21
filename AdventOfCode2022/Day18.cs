@@ -28,12 +28,15 @@ internal class Day18 : IDay
     public string SolvePart1(string input)
         => $"{SurfaceArea(ParseInput(input))}";
 
+    public string SolvePart2(string input)
+        => $"{FlowWater(ParseInput(input))}";
+
     static int FlowWater(HashSet<Coord> lava)
     {
         int area = 0;
         Coord pond = (lava.Max(c => c.X) + 1, lava.Max(c => c.Y) + 1, lava.Max(c => c.Z) + 1);
-        Queue<Coord> queue = new(new Coord[] {(-1, -1, -1)});
-        HashSet<Coord> water = new(new Coord[] {(-1, -1, -1)});
+        Queue<Coord> queue = new(new Coord[] { (-1, -1, -1) });
+        HashSet<Coord> water = new(new Coord[] { (-1, -1, -1) });
 
         while (queue.TryDequeue(out var current))
         {
@@ -46,7 +49,4 @@ internal class Day18 : IDay
 
         return area;
     }
-
-    public string SolvePart2(string input)
-        => $"{FlowWater(ParseInput(input))}";
 }

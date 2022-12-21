@@ -62,27 +62,17 @@ internal partial class Day7 : IDay
     static Folder ParseInput(string input)
     {
         IEnumerable<string[]> commands = input.Split("$ ").Select(c => c.Split("\r\n").Where(s => s != string.Empty).ToArray()).Where(s => s.Length != 0);
-        Folder current = new (null, "");
+        Folder current = new(null, "");
 
         foreach (string[] command in commands)
         {
             string[] operation = command[0].Split(" ");
-
-            if (operation[0][0] == 'c')
-            {
-                current = operation[1] == ".." ? current.Parent ?? current : current.AddChild(operation[1]);
-            }
-            else
-            {
-                command.Select(l => FileSizeName().Matches(l)).Where(l => l.Count > 0)
+            if (operation[0][0] == 'c') current = operation[1] == ".." ? current.Parent ?? current : current.AddChild(operation[1]);
+            else command.Select(l => FileSizeName().Matches(l)).Where(l => l.Count > 0)
                     .Select(m => m.First().Groups.Cast<Group>().Skip(1).Select(g => g.Value).ToArray()).ToList()
                     .ForEach(f => current.AddFile(f[1], long.Parse(f[0])));
-            }
         }
-
-        // traverse back to root now
         while (current.Parent != null) current = current.Parent;
-
 
         return current;
     }

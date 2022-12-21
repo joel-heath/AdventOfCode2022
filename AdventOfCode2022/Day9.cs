@@ -76,7 +76,7 @@ internal class Day9 : IDay
         string[] lines = input.Split("\r\n");
 
         (int, int)[] rope = new (int x, int y)[10];
-        List<(int, int)> vis = new ();
+        List<(int, int)> vis = new();
 
         for (int i = 0; i < lines.Length; i++)
         {

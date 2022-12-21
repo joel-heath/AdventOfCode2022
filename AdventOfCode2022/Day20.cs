@@ -39,7 +39,7 @@ internal class Day20 : IDay
         return copy;
     }
 
-    public Queue<LinkedListNode<long>> Mix(LinkedList<long> list, Queue<LinkedListNode<long>> dataStream)
+    static Queue<LinkedListNode<long>> Mix(LinkedList<long> list, Queue<LinkedListNode<long>> dataStream)
     {
         Queue<LinkedListNode<long>> newDataStream = new();
 
