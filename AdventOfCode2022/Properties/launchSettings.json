@@ -2,7 +2,7 @@
   "profiles": {
     "AdventOfCode2022": {
       "commandName": "Project",
-      "commandLineArgs": "22 1 1"
+      "commandLineArgs": "22 2 0"
     }
   }
 }
