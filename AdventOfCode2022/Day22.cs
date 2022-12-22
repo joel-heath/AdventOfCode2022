@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Runtime.InteropServices;
 
 namespace AdventOfCode2022;
 internal partial class Day22 : IDay
@@ -16,7 +17,7 @@ internal partial class Day22 : IDay
     };
     public Dictionary<string, string> UnitTestsP2 => new()
     {
-        { "TestInput", "Output" }
+        { "        ...#\r\n        .#..\r\n        #...\r\n        ....\r\n...#.......#\r\n........#...\r\n..#....#....\r\n..........#.\r\n        ...#....\r\n        .....#..\r\n        .#......\r\n        ......#.\r\n\r\n10R5L5R10L4R5L5", "5031" }
     };
 
     static (Dictionary<int, Dictionary<int, char>>, (int m, char d)[]) ParseInput(string input)
@@ -60,62 +61,34 @@ internal partial class Day22 : IDay
 
     static (int, int) TryMovePlayer(Dictionary<int, Dictionary<int, char>> dict, int y, int x, int oldY, int oldX)
     {
-        if (dict.TryGetValue(y, out var row))
+        if (dict.TryGetValue(y, out var row) && row.TryGetValue(x, out var position))
+            return position == '.' ? (y, x) : (oldY, oldX);
+
+
+        // fallen off x-axis
+        if (oldY == y)
         {
-            if (row.TryGetValue(x, out var position))
-            {
-                return position == '.' ? (y, x) : (oldY, oldX);
-            }
+            var closeX = row!.Min(x => x.Key);
+            int farX = row!.Max(x => x.Key);
 
-            var closeX = row.Min(x => x.Key);
-            int farX = row.Max(x => x.Key);
-
-            if (oldY == y)
-            {
-                // fallen off right side 
-                if (farX == oldX && oldX + 1 == x)
-                {
-                    return (row[closeX] == '.') ? (y, closeX) : (oldY, oldX);
-                }
-                // off left side
-                if (closeX == oldX && oldX - 1 == x)
-                {
-                    return (row[farX] == '.') ? (y, farX) : (oldY, oldX);
-                }
-                throw new Exception("Where the heck did you go?");
-            }
-
-            var column = dict.Where(r => r.Value.ContainsKey(x));
-            int closeY = column.Min(k => k.Key);
-            int farY = column.Max(k => k.Key);
-
-            // off top
-            if (closeY == oldY && oldY - 1 == y)
-            {
-                return dict[farY].TryGetValue(x, out char pos) && pos == '.' ? (farY, x) : (oldY, oldX);
-            }
-            // off bottom
-            if (farY == oldY && oldY + 1 == y)
-            {
-                return dict[closeY].TryGetValue(x, out char pos) && pos == '.' ? (closeY, x) : (oldY, oldX);
-            }
+            // fallen off right side 
+            return (farX == oldX && oldX + 1 == x) ? ((row![closeX] == '.') ? (y, closeX) : (oldY, oldX)) : ((row![farX] == '.') ? (y, farX) : (oldY, oldX));
         }
-        else
+
+        // fallen off y-axis
+        var column = dict.Where(r => r.Value.ContainsKey(x));
+        int closeY = column.Min(k => k.Key);
+        int farY = column.Max(k => k.Key);
+
+        // off top
+        if (closeY == oldY && oldY - 1 == y)
         {
-            var column = dict.Where(r => r.Value.ContainsKey(x));
-            int closeY = column.Min(y => y.Key);
-            int farY = column.Max(y => y.Key);
-
-            if (closeY == oldY && oldY - 1 == y)
-            {
-                return dict[farY].TryGetValue(x, out char position) && position == '.' ? (farY, x) : (oldY, oldX);
-            }
-            else if (farY == oldY && oldY + 1 == y)
-            {
-                return dict[closeY].TryGetValue(x, out char position) && position == '.' ? (closeY, x) : (oldY, oldX);
-            }
+            return dict[farY].TryGetValue(x, out char posit) && posit == '.' ? (farY, x) : (oldY, oldX);
         }
-        return (oldY, oldX);
+        // off bottom
+        return dict[closeY].TryGetValue(x, out char pos) && pos == '.' ? (closeY, x) : (oldY, oldX);
+        
+        //return (oldY, oldX);
     }
 
     
@@ -128,12 +101,6 @@ internal partial class Day22 : IDay
         int y = 0;
         int x = map[0].Min(k => k.Key);
         int direction = 0;
-
-        //Console.ReadKey(true);
-        //Console.Clear();
-
-        //Console.SetCursorPosition(x, y);
-        //Console.Write(direction == 0 ? '>' : direction == 1 ? 'v' : direction == 2 ? '<' : '^');
 
         foreach ((int mag, char dir) in directions)
         {
@@ -158,30 +125,208 @@ internal partial class Day22 : IDay
                 {
                     y = newY;
                     x = newX;
-                    //Console.SetCursorPosition(x, y);
-                    //Console.Write(direction == 0 ? '>' : direction == 1 ? 'v' : direction == 2 ? '<' : '^');
                 }
             }
 
             direction = mod(direction + (dir == 'R' ? 1 : -1), 4);
-            //Console.SetCursorPosition(x, y);
-            //Console.Write(direction == 0 ? '>' : direction == 1 ? 'v' : direction == 2 ? '<' : '^');
         }
 
-
-        //Console.ReadKey(true);
-
         // on last direction added a fake right, so now remove it (direction - 1)
-        return $"{(1000 * (y + 1)) + (4 * (x + 1)) + (direction - 1)}";
+        return $"{(1000 * (y + 1)) + (4 * (x + 1)) + (mod(direction - 1, 4))}";
 
 
-
-        // 115184 too high
     }
+
+    static (int, int) MovePlayerCube(Dictionary<int, Dictionary<int, char>> dict, int y, int x, int oldY, int oldX, int n, ref int facing)
+    {
+        if (dict.TryGetValue(y, out var row) && row.TryGetValue(x, out var position))
+            return position == '.' ? (y, x) : (oldY, oldX);
+
+        int newY;
+        int newX;
+        // quadrants 0 and 1
+        if (oldY < n)
+        {
+            // west of quadrant 0 -> west of quad 3
+            if (x < n)
+            {
+                newY = (3 * n) - oldY - 1;
+                newX = oldX - n;
+                facing = 0;
+            }
+            // north of quadrant 0 -> west of quad 5
+            else if (x < 2 * n)
+            {
+                newY = oldX + (2 * n);
+                newX = oldY;
+                facing = 0;
+            }
+
+            // top or bottom of quadrant 1
+            else if (x < 3 * n)
+            {
+                // south of quadrant 1 -> east of quad 2
+                if (y == n)
+                {
+                    newY = oldX - n;
+                    newX = oldY + n;
+                    facing = 2;
+                }
+                // north of quadrant 1 -> south of quad 5
+                else
+                {
+                    newY = (4 * n) - 1;
+                    newX = oldX - (2 * n);
+                    facing = 3;
+                }
+            }
+            // east of quad 1 -> east of quad 4
+            else
+            {
+                newY = (3 * n) - oldY - 1;
+                newX = oldX - n;
+                facing = 2;
+            }
+        }
+        // quadrant 2
+        else if (oldY < 2 * n)
+        {
+            // west of quadrant 2 -> north of quad 3
+            if (x < n)
+            {
+                newY = 2 * n;
+                newX = oldY - n;
+                facing = 1;
+            }
+            // east of quadrant 2 -> south of quad 1
+            else
+            {
+                newY = oldX - n;
+                newX = oldY + n;
+                facing = 3;
+            }
+        }
+        // quadrants 3 or 4
+        else if (oldY < 3 * n)
+        {
+            // west of quad 3 -> west of quad 0
+            if (x < 0)
+            {
+                newY = (3 * n) - oldY - 1;
+                newX = oldX + n;
+                facing = 0;
+            }
+            // north of quad 3 -> west of quad 2
+            else if (y < 2 * n)
+            {
+                newY = oldX + n;
+                newX = n;
+                facing = 0;
+            }
+            // south of quad 4 -> east of quad 5
+            else if (y == 3 * n)
+            {
+                newY = oldX + (2 * n);
+                newX = oldY - (2 * n);
+                facing = 2;
+            }
+            // east of quad 4 -> east of quad 2
+            else
+            {
+                newY = (3 * n) - oldY - 1;
+                newX = oldX + n;
+                facing = 2;
+            }
+        }
+        // quadrant 5
+        else
+        {
+            // west of quad 5 -> north of quad 0
+            if (x < 0)
+            {
+                newY = oldX;
+                newX = oldY - (2 * n);
+                facing = 1;
+            }
+            // south of quad 5 -> north of quad 1
+            else if (y == 4 * n)
+            {
+                newY = 0;
+                newX = oldX + (2 * n);
+                facing = 1; // still going south
+            }
+            // east of quad 5 -> south of quad 4
+            else
+            {
+                newY = oldX + (2 * n);
+                newX = oldY - (2 * n);
+                facing = 3;
+            }
+        }
+
+        return dict[newY][newX] == '.' ? (newY, newX) : (oldY, oldX);
+    }
+
+
 
     public string SolvePart2(string input)
     {
-        return $"{string.Empty}";
+        int n = UnitTestsP2.ContainsKey(input) ? 4 : 50;
+
+        Dictionary<int, Dictionary<int, char>> map;
+        (int m, char d)[] directions;
+        (map, directions) = ParseInput(input);
+
+        int y = 0;
+        int x = map[0].Min(k => k.Key);
+        int direction = 0;
+
+
+        foreach ((int mag, char dir) in directions)
+        {
+            for (int i = 0; i < mag; i++)
+            {
+                int newX = x, newY = y;
+                switch (direction)
+                {
+                    case 0: newX++; break; // east
+                    case 1: newY++; break; // south
+                    case 2: newX--; break; // west
+                    case 3: newY--; break; // north
+                }
+
+                (newY, newX) = MovePlayerCube(map, newY, newX, y, x, n, ref direction);
+
+                //Console.WriteLine($"({y}, {x}) -> ({newY}, {newX})");
+
+                if (newY == y && newX == x)
+                {
+                    break;
+                }
+                else
+                {
+                    y = newY;
+                    x = newX;
+                }
+            }
+
+            direction = mod(direction + (dir == 'R' ? 1 : -1), 4);
+        }
+
+
+
+        // on last direction added a fake right, so now remove it (direction - 1)
+        return $"{(1000 * (y + 1)) + (4 * (x + 1)) + mod(direction - 1, 4)}";
+
+
+        // 182060 too high
+        // 177054 too high
+        // 124180 too high
+
+        // 116156 yet to try??
+
+        //  27355 too low
+
     }
 
     [GeneratedRegex("(\\d+\\w)")]
