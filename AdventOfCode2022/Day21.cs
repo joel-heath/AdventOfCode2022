@@ -71,20 +71,19 @@ internal class Day21 : IDay
     static long WhatWillHeYell(string monkeyName, Dictionary<string, Monkey> monkeys)
     {
         Monkey m = monkeys[monkeyName];
-        if (m.Value != null) { return m.Value.Value; }
+        if (m.Value != null) return m.Value.Value;
 
         long val1 = WhatWillHeYell(m.Operand1, monkeys);
         long val2 = WhatWillHeYell(m.Operand2, monkeys);
 
-        long value = m.Opcode switch
+        return m.Opcode switch
         {
             '+' => val1 + val2,
             '-' => val1 - val2,
             '*' => val1 * val2,
-            '/' => val1 / val2
+            '/' => val1 / val2,
+            _ => -1
         };
-
-        return value;
     }
 
     static bool FindHumn(string monkeyName, Dictionary<string, Monkey> monkeys)
@@ -102,41 +101,31 @@ internal class Day21 : IDay
         if (monkeyName == "root")
             return FindHumn(m.Operand1, monkeys) ? WhatWillYouYell(m.Operand1, monkeys, WhatWillHeYell(m.Operand2, monkeys)) : WhatWillYouYell(m.Operand2, monkeys, WhatWillHeYell(m.Operand1, monkeys));
 
-
-        bool humanIsOnLeft = FindHumn(m.Operand1, monkeys);
-        if (humanIsOnLeft)
+        if (FindHumn(m.Operand1, monkeys))
         {
-            long val1 = WhatWillHeYell(m.Operand2, monkeys);
-
-            long ans = m.Opcode switch
+            long value = WhatWillHeYell(m.Operand2, monkeys);
+            long answer = m.Opcode switch
             {
-                '+' => above - val1,
-                '-' => above + val1,
-                '*' => above / val1,
-                '/' => above * val1
+                '+' => above - value,
+                '-' => above + value,
+                '*' => above / value,
+                '/' => above * value,
+                _ => -1
             };
-
-            if (m.Operand1 == "humn")
-                return ans;
-
-            return WhatWillYouYell(m.Operand1, monkeys, ans);
+            return m.Operand1 == "humn" ? answer : WhatWillYouYell(m.Operand1, monkeys, answer);
         }
         else
         {
-            long val1 = WhatWillHeYell(m.Operand1, monkeys);
-
-            long ans = m.Opcode switch
+            long value = WhatWillHeYell(m.Operand1, monkeys);
+            long answer = m.Opcode switch
             {
-                '+' => above - val1,
-                '-' => val1 - above,
-                '*' => above / val1,
-                '/' => val1 / above
+                '+' => above - value,
+                '-' => value - above,
+                '*' => above / value,
+                '/' => value / above,
+                _ => -1
             };
-
-            if (m.Operand2 == "humn")
-                return ans;
-
-            return WhatWillYouYell(m.Operand2, monkeys, ans);
+            return m.Operand2 == "humn" ? answer : WhatWillYouYell(m.Operand2, monkeys, answer);
         }
     }
 
