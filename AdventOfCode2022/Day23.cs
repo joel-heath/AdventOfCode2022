@@ -18,7 +18,7 @@ internal class Day23 : IDay
     };
     public Dictionary<string, string> UnitTestsP2 => new()
     {
-        { "TestInput", "Output" }
+        { "....#..\r\n..###.#\r\n#...#.#\r\n.#...##\r\n#.###..\r\n##.#.##\r\n.#..#..", "20" }
     };
 
     static Point[] ParseInput(string input)
@@ -65,58 +65,19 @@ internal class Day23 : IDay
     public string SolvePart1(string input)
     {
         Point[] elves = ParseInput(input);
-        /*
-        Console.Clear();
-        for (int j = 0; j < elves.Length; j++)
-        {
-            Console.SetCursorPosition(elves[j].X, elves[j].Y);
-            Console.Write('#');
-        }
-        Console.ReadKey(true);*/
 
         for (int i = 0; i < 10; i++)
         {
             // first half
             Point?[] newPoses = elves.Select(e => ConsiderMove(e, elves, i)).ToArray();
-            /*
-            Point?[] newPoses = new Point[elves.Length];
-
-            for (int j = 0; j < elves.Length; j++)
-            {
-                newPoses[j] = ConsiderMove(elves[j], elves, i);
-            }
-            */
 
             // second half
-            
             for (int j = 0; j < elves.Length; j++)
             {
                 if (newPoses.Count(p => p != null && p == newPoses[j]) == 1)
                     elves[j] = newPoses[j];
             }
-
-            //foreach ((Point? e, int i) pos in newPoses.Select((e, i) => (e, i)).Where(e => e.e is not null).DistinctBy(e => e.e)) elves[pos.i] = pos.e!;
-            /*
-            Console.Clear();
-            for (int j = 0; j < elves.Length; j++)
-            {
-                Console.SetCursorPosition(elves[j].X, elves[j].Y);
-                Console.Write('#');
-            }
-            Console.ReadKey(true);*/
         }
-        /*
-        for (int j = 0; j < elves.Length; j++)
-        {
-            try
-            {
-                Console.SetCursorPosition(elves[j].X, elves[j].Y);
-                Console.Write('#');
-            }
-            catch { }
-        }
-        Console.ReadKey(true);*/
-
 
         Point bottomRight = (elves.Max(e => e.X), elves.Max(e => e.Y));
         Point topLeft = (elves.Min(e => e.X), elves.Min(e => e.Y));
@@ -136,6 +97,26 @@ internal class Day23 : IDay
 
     public string SolvePart2(string input)
     {
-        return $"{string.Empty}";
+        Point[] elves = ParseInput(input);
+
+        int roundCount = 0;
+        for (; roundCount < int.MaxValue; roundCount++)
+        {
+            // first half
+            Point?[] newPoses = elves.Select(e => ConsiderMove(e, elves, roundCount)).ToArray();
+
+            if (!newPoses.Any(p => p is not null)) break;
+
+            // second half
+            for (int j = 0; j < elves.Length; j++)
+            {
+                if (newPoses.Count(p => p != null && p == newPoses[j]) == 1)
+                    elves[j] = newPoses[j];
+            }
+
+            Console.WriteLine(roundCount);
+        }
+
+        return $"{roundCount + 1}";
     }
 }
