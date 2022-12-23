@@ -84,7 +84,7 @@ internal partial class Day22 : IDay
         if (dict.TryGetValue(y, out var row) && row.TryGetValue(x, out var position))
             return position == '.' ? (y, x, facing) : (oldY, oldX, facing);
 
-        // This algorithm is based entirely on my input's cube net--it doesnt work on the test input and may not work on yours
+        // This algorithm is based entirely on my input's cube net--it doesnt work on the test input
         // quadrants 0 and 1
         if (oldY < n)
         {
