@@ -22,43 +22,26 @@ internal class Day23 : IDay
     };
 
     static Point[] ParseInput(string input)
+    => input.Split("\r\n").Select((l, i) => (l, i)).Select(r => r.l.Select((c, i) => (c, i)).Where(c => c.c == '#').Select(c => new Point(c.i, r.i))).SelectMany(p => p).ToArray();
+
+    static Point? ConsiderMove(Point elf, Point[] elves, int offset)
     {
-        List<Point> map = new();
-        string[] lines = input.Split("\r\n");
+        Point[] cardinals = new Point[] { (0, -1), (0, 1), (-1, 0), (1, 0) }.Select(p => elf + p).ToArray(); // order is the game order -> north south west east
+        Point[] diagonals = new Point[] { (1, -1), (-1, 1), (-1, -1), (1, 1) }.Select(p => elf + p).ToArray(); // order is cardinals +45 deg
+        Point[] adjacents = cardinals.Concat(diagonals).ToArray();
 
-        for (int i = 0; i < lines.Length; i++)
-        {
-            string line = lines[i];
-
-            for (int j = 0; j < line.Length; j++)
-            {
-                if (line[j] == '#')
-                    map.Add((j, i));
-            }
-        }
-
-        return map.ToArray();
-    }
-
-    static Point? ConsiderMove(Point elf, Point[] elves, int num)
-    {
-        Point[] north = new Point[] { (-1, -1), (0, -1), (1, -1) }.Select(p => elf + p).ToArray();
-        Point[] south = new Point[] { (-1, 1), (0, 1), (1, 1) }.Select(p => elf + p).ToArray();
-        Point[] west = new Point[] { (-1, -1), (-1, 0), (-1, 1) }.Select(p => elf + p).ToArray();
-        Point[] east = new Point[] { (1, -1), (1, 0), (1, 1) }.Select(p => elf + p).ToArray();
+        Point[] north = { cardinals[0], diagonals[0], diagonals[2] };
+        Point[] south = { cardinals[1], diagonals[1], diagonals[3] };
+        Point[] west  = { cardinals[2], diagonals[1], diagonals[2] };
+        Point[] east  = { cardinals[3], diagonals[0], diagonals[3] };
         Point[][] directions = { north, south, west, east };
 
-        Point[] adjacents = north.Concat(south).Concat(new Point[] { east[1], west[1] }).ToArray();
-        //Point[] allAdjacents = { (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1) }.Select(a => elf + a);
         if (!adjacents.Any(elves.Contains)) return null;
-
-        for (int i = num; i < num + 4; i++)
+        for (int i = offset; i < offset + 4; i++)
         {
             Point[] direction = directions[i % 4];
-            if (!direction.Any(elves.Contains))
-                return direction[1];
+            if (!direction.Any(elves.Contains)) return direction[0];
         }
-
         return null;
     }
 
@@ -68,55 +51,30 @@ internal class Day23 : IDay
 
         for (int i = 0; i < 10; i++)
         {
-            // first half
-            Point?[] newPoses = elves.Select(e => ConsiderMove(e, elves, i)).ToArray();
-
-            // second half
-            for (int j = 0; j < elves.Length; j++)
-            {
-                if (newPoses.Count(p => p != null && p == newPoses[j]) == 1)
-                    elves[j] = newPoses[j];
-            }
+            Point?[] propositions = elves.Select(e => ConsiderMove(e, elves, i)).ToArray();
+            elves = elves.Select((e, j) => propositions.Count(p => p != null && p == propositions[j]) == 1 ? propositions[j]! : e).ToArray();
         }
 
-        Point bottomRight = (elves.Max(e => e.X), elves.Max(e => e.Y));
         Point topLeft = (elves.Min(e => e.X), elves.Min(e => e.Y));
+        Point dimensions = (elves.Max(e => e.X) - topLeft.X + 1, elves.Max(e => e.Y) - topLeft.Y + 1);
 
-        int count = 0;
-        for (int i = topLeft.X; i <= bottomRight.X; i++)
-        {
-            for (int j = topLeft.Y; j <= bottomRight.Y; j++)
-            {
-                if (!elves.Contains((i, j))) count++;
-            }
-        }
-
-
-        return $"{count}";
+        return $"{Enumerable.Range(topLeft.X, dimensions.X)
+            .Select(x => Enumerable.Range(topLeft.Y, dimensions.Y)
+            .Where(y => !elves.Contains((x, y))).Count()).Sum()}";
     }
 
     public string SolvePart2(string input)
     {
         Point[] elves = ParseInput(input);
+        Point?[] propositions = elves; // temp value
 
         int roundCount = 0;
-        for (; roundCount < int.MaxValue; roundCount++)
+        while (propositions.Any(p => p is not null))
         {
-            // first half
-            Point?[] newPoses = elves.Select(e => ConsiderMove(e, elves, roundCount)).ToArray();
-
-            if (!newPoses.Any(p => p is not null)) break;
-
-            // second half
-            for (int j = 0; j < elves.Length; j++)
-            {
-                if (newPoses.Count(p => p != null && p == newPoses[j]) == 1)
-                    elves[j] = newPoses[j];
-            }
-
-            Console.WriteLine(roundCount);
+            propositions = elves.Select(e => ConsiderMove(e, elves, roundCount++)).ToArray();
+            elves = elves.Select((e, j) => propositions.Count(p => p != null && p == propositions[j]) == 1 ? propositions[j]! : e).ToArray();
         }
 
-        return $"{roundCount + 1}";
+        return $"{roundCount}";
     }
 }

@@ -156,8 +156,8 @@ class Point
     public override bool Equals(object? obj) => obj is Point p && p.x.Equals(x) && p.y.Equals(y);
     public override int GetHashCode() => HashCode.Combine(x, y);
 
-    public static bool operator ==(Point a, Point b) => (a is null && b is null) || (a is not null && b is not null && a.x == b.x && a.y == b.y);
-    public static bool operator !=(Point a, Point b) => (a is not null || b is not null) && (a is null || b is null || a.x != b.x || a.y != b.y);
+    public static bool operator ==(Point? a, Point? b) => (a is null && b is null) || (a is not null && b is not null && a.x == b.x && a.y == b.y);
+    public static bool operator !=(Point? a, Point? b) => (a is not null || b is not null) && (a is null || b is null || a.x != b.x || a.y != b.y);
 
     public override string ToString() => $"({X}, {Y})";
 }
