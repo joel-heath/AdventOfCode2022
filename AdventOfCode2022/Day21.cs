@@ -82,7 +82,7 @@ internal class Day21 : IDay
             '-' => val1 - val2,
             '*' => val1 * val2,
             '/' => val1 / val2,
-            _ => -1
+             _  => -1
         };
     }
 
@@ -110,7 +110,7 @@ internal class Day21 : IDay
                 '-' => above + value,
                 '*' => above / value,
                 '/' => above * value,
-                _ => -1
+                 _  => -1
             };
             return m.Operand1 == "humn" ? answer : WhatWillYouYell(m.Operand1, monkeys, answer);
         }
@@ -123,7 +123,7 @@ internal class Day21 : IDay
                 '-' => value - above,
                 '*' => above / value,
                 '/' => value / above,
-                _ => -1
+                 _  => -1
             };
             return m.Operand2 == "humn" ? answer : WhatWillYouYell(m.Operand2, monkeys, answer);
         }

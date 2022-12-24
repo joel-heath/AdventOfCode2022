@@ -147,6 +147,9 @@ class Point
         x = this.x;
         y = this.y;
     }
+    
+
+    public int MDistanceTo(Point b) => Math.Abs(b.X - X) + Math.Abs(b.Y - Y);
 
     public static Point operator +(Point a, Point b) => new(a.x + b.x, a.y + b.y);
     public static Point operator -(Point a, Point b) => new(a.x - b.x, a.y - b.y);

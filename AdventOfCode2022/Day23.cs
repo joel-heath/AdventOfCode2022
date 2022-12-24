@@ -45,6 +45,7 @@ internal class Day23 : IDay
         return null;
     }
 
+    
     public string SolvePart1(string input)
     {
         Point[] elves = ParseInput(input);
@@ -55,12 +56,7 @@ internal class Day23 : IDay
             elves = elves.Select((e, j) => propositions.Count(p => p != null && p == propositions[j]) == 1 ? propositions[j]! : e).ToArray();
         }
 
-        Point topLeft = (elves.Min(e => e.X), elves.Min(e => e.Y));
-        Point dimensions = (elves.Max(e => e.X) - topLeft.X + 1, elves.Max(e => e.Y) - topLeft.Y + 1);
-
-        return $"{Enumerable.Range(topLeft.X, dimensions.X)
-            .Select(x => Enumerable.Range(topLeft.Y, dimensions.Y)
-            .Where(y => !elves.Contains((x, y))).Count()).Sum()}";
+        return $"{(elves.Max(e => e.X) - elves.Min(e => e.X) + 1) * (elves.Max(e => e.Y) - elves.Min(e => e.Y) + 1) - elves.Length}";
     }
 
     public string SolvePart2(string input)
@@ -71,8 +67,10 @@ internal class Day23 : IDay
         int roundCount = 0;
         while (propositions.Any(p => p is not null))
         {
-            propositions = elves.Select(e => ConsiderMove(e, elves, roundCount++)).ToArray();
+            propositions = elves.Select(e => ConsiderMove(e, elves, roundCount)).ToArray();
             elves = elves.Select((e, j) => propositions.Count(p => p != null && p == propositions[j]) == 1 ? propositions[j]! : e).ToArray();
+            roundCount++;
+            Console.WriteLine(roundCount);
         }
 
         return $"{roundCount}";
