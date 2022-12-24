@@ -12,11 +12,12 @@ internal class Day24 : IDay
     public int Day => 24;
     public Dictionary<string, string> UnitTestsP1 => new()
     {
-        //{ "#.#####\r\n#.....#\r\n#>....#\r\n#.....#\r\n#...v.#\r\n#.....#\r\n#####.#", "10" },
+        { "#.#####\r\n#.....#\r\n#>....#\r\n#.....#\r\n#...v.#\r\n#.....#\r\n#####.#", "10" },
         { "#.######\r\n#>>.<^<#\r\n#.<..<<#\r\n#>v.><>#\r\n#<^v^^>#\r\n######.#", "18" }
     };
     public Dictionary<string, string> UnitTestsP2 => new()
     {
+        { "#.#####\r\n#.....#\r\n#>....#\r\n#.....#\r\n#...v.#\r\n#.....#\r\n#####.#", "30" },
         { "#.######\r\n#>>.<^<#\r\n#.<..<<#\r\n#>v.><>#\r\n#<^v^^>#\r\n######.#", "54" }
     };
 
@@ -34,7 +35,7 @@ internal class Day24 : IDay
 
         Point start = (lines[0].IndexOf('.'), 0);
         Point goal = (lines[^1].IndexOf('.'), lines.Length - 1);
-        HashSet<Point> walls = new() { start - (0, 1), goal + (0, 1) }; // dont let them escape through entrance
+        HashSet<Point> walls = new() { start + (0, -1), goal + (0, 1) }; // dont let them escape through entrance
 
         HashSet<(Point, int)> blizards = new();
         //Dictionary<Point, List<int>> blizziez = new();
@@ -105,12 +106,10 @@ internal class Day24 : IDay
 
             if (walls.Contains(newLocation))
             {
-                var row = walls.Where(w => w.Y == newLocation.Y);
-                int closeX = row.Min(w => w.X);
-                int farX = row.Max(w => w.X);
-                var col = walls.Where(w => w.X == newLocation.X);
-                int closeY = col.Min(w => w.Y);
-                int farY = col.Max(w => w.Y);
+                int closeX = 0;
+                int closeY = 0;
+                int farX = walls.Max(w => w.X);
+                int farY = walls.Max(w => w.Y) - 1;
 
                 if (newLocation.X == closeX) newLocation = (farX - 1, newLocation.Y);
                 else if (newLocation.X == farX) newLocation = (closeX + 1, newLocation.Y);
@@ -124,17 +123,33 @@ internal class Day24 : IDay
         return newBlizzards;
     }
 
-    static HashSet<(Point, int)> WhereAreTheBlizzards(int time, HashSet<(Point, int)> blizzards, HashSet<Point> walls)
+    static int Mod(int x, int m) => (x % m + m) % m;
+
+    static HashSet<(Point, int)> WhereAreTheBlizzards(int time, HashSet<(Point location, int direction)> blizzards, HashSet<Point> walls)
     {
         HashSet<(Point, int)> newBlizzards = blizzards.ToHashSet();
-        for (int i = 0; i < time % newBlizzards.Count; i++)
+
+        for (int i = 0; i < time; i++)
             newBlizzards = MoveBlizzards(newBlizzards, walls);
-        // could even speed this up a lot with modolo
+
+        //can do mod the length / width
+        /*HashSet<(Point, int)> newBlizzards = new();
+        foreach (var (location, direction) in blizzards)
+        {
+            newBlizzards.Add((direction switch {
+                0 => (location.X, Mod(location.Y - time - 1, walls.Max(w => w.Y) - 3) + 1),
+                2 => (location.X, Mod(location.Y + time - 1, walls.Max(w => w.Y) - 3) + 1),
+                1 => (Mod(location.X + time - 1, walls.Max(w => w.X) - 3) + 1, location.Y),
+                _ => (Mod(location.X - time - 1, walls.Max(w => w.X) - 3) + 1, location.Y)
+            }, direction));
+        }*/
+
+
         return newBlizzards;
     }
 
     static int bestSoFar;
-    static int DistanceTo(Node current, Point goal, HashSet<Point> walls, HashSet<(Point, int)> blizzards, Dictionary<string, int> cache)
+    static int ShortestPath(Node current, Point goal, HashSet<Point> walls, HashSet<(Point, int)> blizzards, Dictionary<string, int> cache)
     {
         string cacheKey = $"{current.Time}{current.Location}";
         if (cache.TryGetValue(cacheKey, out int value))
@@ -147,13 +162,14 @@ internal class Day24 : IDay
         if (current.Time + current.Heuristic < bestSoFar)
         {
             HashSet<(Point, int)> newBlizzards = MoveBlizzards(blizzards, walls);
+
             foreach (Node n in Options(current, goal))//.OrderBy(n => n.Heuristic))
             {
                 // would like to use the fact its a hash set over this, could be v slow
                 if (newBlizzards.Any(b => b.Item1 == n.Location)) continue;
                 if (walls.Contains(n.Location)) continue;
 
-                bestTime = Math.Min(DistanceTo(n, goal, walls, newBlizzards, cache), bestTime);
+                bestTime = Math.Min(ShortestPath(n, goal, walls, newBlizzards, cache), bestTime);
             }
         }
         if (bestTime < bestSoFar)
@@ -170,35 +186,70 @@ internal class Day24 : IDay
     {
         (Point start, Point end, HashSet<Point> walls, HashSet<(Point, int)> blizzards) = ParseInput(input);
 
-        bestSoFar = UnitTestsP1.ContainsKey(input) ? 30 : 400;
-        return $"{DistanceTo(new Node(start, 0, start.MDistanceTo(end)), end, walls, blizzards, new())}";
+        bestSoFar = UnitTestsP1.ContainsKey(input) ? 30 : 320;
+        return $"{ShortestPath(new Node(start, 0, start.MDistanceTo(end)), end, walls, blizzards, new())}";
+    }
+
+    static void VisualiseBlizzies(HashSet<(Point, int)> blizzards, HashSet<Point> walls)
+    {
+        for (int r = 0; r <= walls.Max(p => p.Y); r++)
+        {
+            for (int c = 0; c <= walls.Max(p => p.X); c++)
+            {
+                Console.Write(walls.Contains((c, r)) ? '#' : '.');
+            }
+            Console.WriteLine();
+        }
+
+        foreach (var bliz in blizzards)
+        {
+            Console.SetCursorPosition(bliz.Item1.X, bliz.Item1.Y);
+            Console.Write(bliz.Item2 switch
+            {
+                0 => '^',
+                1 => '>',
+                2 => 'v',
+                _ => '<'
+            });
+        }
+
+        foreach (var bliz in blizzards.Select(p => p.Item1).GroupBy(p => p).Where(g => g.Count() > 1))
+        {
+            Console.SetCursorPosition(bliz.Key.X, bliz.Key.Y);
+            Console.Write(bliz.Count());
+        }
+
+        
     }
 
     public string SolvePart2(string input)
     {
-        (Point start, Point end, HashSet<Point> walls, HashSet<(Point, int)> initBlizzards) = ParseInput(input);
+        (Point start, Point end, HashSet<Point> walls, HashSet<(Point, int)> blizzards) = ParseInput(input);
 
-        /* SKIP for my input
+        /*
         int thereOnce = 308;
-        HashSet<(Point, int)> currentBlizzards = WhereAreTheBlizzards(thereOnce, initBlizzards, walls);
+        blizzards = WhereAreTheBlizzards(thereOnce, blizzards, walls);
         Console.WriteLine($"Made it to end in {thereOnce} minutes");
         */
 
-        HashSet<(Point, int)> currentBlizzards = new(initBlizzards);
+        /*Console.ReadKey();
+        Console.Clear();
+        VisualiseBlizzies(currentBlizzards, walls);
+        Console.ReadKey();*/
 
-        bestSoFar = UnitTestsP2.ContainsKey(input) ? 30 : 400;
-        int thereOnce = DistanceTo(new Node(start, 0, start.MDistanceTo(end)), end, walls, currentBlizzards, new());
-        currentBlizzards = WhereAreTheBlizzards(thereOnce, initBlizzards, walls);
-        Console.WriteLine($"Made it to end in {thereOnce} minutes");
-
-        bestSoFar = UnitTestsP2.ContainsKey(input) ? 30 : 400;
-        int backAgain = DistanceTo(new Node(end, 0, end.MDistanceTo(start)), start, walls, currentBlizzards, new());
-        currentBlizzards = WhereAreTheBlizzards(thereOnce + backAgain + 2, initBlizzards, walls);
-        Console.WriteLine($"Made it back again in {backAgain} minutes");
+        bestSoFar = UnitTestsP2.ContainsKey(input) ? 30 : 320;
+        int thereOnce = ShortestPath(new Node(start, 0, start.MDistanceTo(end)), end, walls, blizzards, new()); // 308 minutes
+        blizzards = WhereAreTheBlizzards(thereOnce, blizzards, walls);
+        Console.WriteLine($"The first trip to the goal takes {thereOnce} minutes");
         
-        bestSoFar = UnitTestsP2.ContainsKey(input) ? 30 : 400;
-        int thereLast = DistanceTo(new Node(start, 0, start.MDistanceTo(end)), end, walls, currentBlizzards, new());
-        Console.WriteLine($"Made it to the finish in {thereLast} minutes");
+        bestSoFar = UnitTestsP2.ContainsKey(input) ? 30 : 320;
+        int backAgain = ShortestPath(new Node(end, 0, end.MDistanceTo(start)), start, walls, blizzards, new()); // 289 minutes
+        blizzards = WhereAreTheBlizzards(backAgain, blizzards, walls);
+        Console.WriteLine($"The trip back to the start takes {backAgain} minutes");
+        
+        bestSoFar = UnitTestsP2.ContainsKey(input) ? 30 : 320;
+        int thereLast = ShortestPath(new Node(start, 0, start.MDistanceTo(end)), end, walls, blizzards, new()); // 311 minutes
+        Console.WriteLine($"The trip back to the goal again takes {thereLast} minutes");
 
         return $"{thereOnce + backAgain + thereLast}";
     }
