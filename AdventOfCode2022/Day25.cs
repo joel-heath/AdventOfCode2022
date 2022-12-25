@@ -22,51 +22,15 @@ internal class Day25 : IDay
     };
 
     static string DecToSNAFU(long dec)
-    {
-        if (dec == 0) return "";
-        return (dec % 5) switch
-        {
+        => dec == 0 ? "" : (dec % 5) switch {
             0 => DecToSNAFU(dec / 5) + "0",
             1 => DecToSNAFU(dec / 5) + "1",
             2 => DecToSNAFU(dec / 5) + "2",
             3 => DecToSNAFU((dec + 2) / 5) + "=",
-            _ => DecToSNAFU((dec + 1) / 5) + "-"
-        };
-    }
+            _ => DecToSNAFU((dec + 1) / 5) + "-"};
 
     public string SolvePart1(string input)
-    {
-        string[] lines = input.Split("\r\n");
-
-        long total = 0;
-        for (int i = 0; i < lines.Length; i++)
-        {
-            string line = lines[i];
-            long num = 0;
-            
-            for (int j = 0; j < line.Length; j++)
-            {
-                char word = line[j];
-
-                int value = word switch
-                {
-                    '=' => -2,
-                    '-' => -1,
-                    '0' => 0,
-                    '1' => 1,
-                     _ => 2
-                };
-
-                num += value * (long)Math.Pow(5, line.Length-j-1);
-            }
-
-            //Console.WriteLine($"{line}   {num}");
-
-            total += num;
-        }
-
-        return $"{DecToSNAFU(total)}";
-    }
-
+    => DecToSNAFU(input.Split("\r\n").Select(l => l.Select((c, i) => c switch { '=' => -2, '-' => -1, _ => int.Parse($"{c}") } * (long)Math.Pow(5, l.Length - i - 1)).Sum()).Sum());
+    
     public string SolvePart2(string input) => "Start the blender";
 }
