@@ -18,68 +18,20 @@ internal class Day25 : IDay
     };
     public Dictionary<string, string> UnitTestsP2 => new()
     {
-        { "TestInput", "Output" }
+        { "It will take 50 stars to fill the blender.", "Start the blender" }
     };
 
-    static long BiggestPowerOfFive(long num)
-    {
-        int i = 0;
-        for (; i <= num; i++)
-        {
-            long n = (long)Math.Pow(5, i);
-            if (n > num) break;
-        }
-
-        return (i - 1);
-    }
-
-    static int BiggestMultipleOfFive(long num, long biggestPower)
-    {
-        long n = biggestPower;
-        int i = -2;
-        for (; i <= 2; i++)
-        {
-            n = biggestPower * i;
-            if (n > num) break;
-        }
-
-        return (i - 1);
-    }
-    /*
-    static string DecToSnafu(long dec)
-    {
-        long length = BiggestPowerOfFive(dec);
-        long power = (long)Math.Pow(5, length);
-        string snafu = string.Empty;
-
-        for (int i = 0; i < length; i++)
-        {
-            int placeValue = BiggestMultipleOfFive(dec, i);
-            long quantity = placeValue * power;
-            dec -= quantity;
-
-            snafu += placeValue switch
-            {
-                -2 => '=',
-                -1 => '-',
-                0 => '0',
-                1 => '1',
-                _ => '2'
-            };
-        }
-
-        return snafu;
-    }*/
-
-    static string DecToSnafu(long dec)
+    static string DecToSNAFU(long dec)
     {
         if (dec == 0) return "";
-        if (dec % 5 == 0) return DecToSnafu(dec / 5) + "0";
-        if (dec % 5 == 1) return DecToSnafu(dec / 5) + "1";
-        if (dec % 5 == 2) return DecToSnafu(dec / 5) + "2";
-        if (dec % 5 == 3) return DecToSnafu((dec + 2) / 5) + "=";
-        if (dec % 5 == 4) return DecToSnafu((dec + 1) / 5) + "-";
-        throw new Exception("Thats a weird number");
+        return (dec % 5) switch
+        {
+            0 => DecToSNAFU(dec / 5) + "0",
+            1 => DecToSNAFU(dec / 5) + "1",
+            2 => DecToSNAFU(dec / 5) + "2",
+            3 => DecToSNAFU((dec + 2) / 5) + "=",
+            _ => DecToSNAFU((dec + 1) / 5) + "-"
+        };
     }
 
     public string SolvePart1(string input)
@@ -113,16 +65,8 @@ internal class Day25 : IDay
             total += num;
         }
 
-        Console.WriteLine($"Decimal: {total}"); // 32005641587247
-
-        string snafu = DecToSnafu(total);
-        Console.WriteLine($"SNAFU: {snafu}");
-
-        return $"{snafu}";
+        return $"{DecToSNAFU(total)}";
     }
 
-    public string SolvePart2(string input)
-    {
-        return $"{string.Empty}";
-    }
+    public string SolvePart2(string input) => "Start the blender";
 }
