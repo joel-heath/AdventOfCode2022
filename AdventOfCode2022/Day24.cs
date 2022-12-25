@@ -21,14 +21,6 @@ internal class Day24 : IDay
         { "#.######\r\n#>>.<^<#\r\n#.<..<<#\r\n#>v.><>#\r\n#<^v^^>#\r\n######.#", "54" }
     };
 
-    static void AddBlizzard(Dictionary<Point, List<int>> dict, Point point, int direction)
-    {
-        if (dict.TryGetValue(point, out var dirs))
-            dirs.Add(direction);
-        else
-            dict[point] = new List<int> { direction };
-    }
-
     static (Point, Point, HashSet<Point>, HashSet<(Point, int)>) ParseInput(string input)
     {
         string[] lines = input.Split("\r\n");
@@ -123,8 +115,6 @@ internal class Day24 : IDay
         return newBlizzards;
     }
 
-    static int Mod(int x, int m) => (x % m + m) % m;
-
     static HashSet<(Point, int)> WhereAreTheBlizzards(int time, HashSet<(Point location, int direction)> blizzards, HashSet<Point> walls)
     {
         HashSet<(Point, int)> newBlizzards = blizzards.ToHashSet();
@@ -188,38 +178,6 @@ internal class Day24 : IDay
 
         bestSoFar = UnitTestsP1.ContainsKey(input) ? 30 : 320;
         return $"{ShortestPath(new Node(start, 0, start.MDistanceTo(end)), end, walls, blizzards, new())}";
-    }
-
-    static void VisualiseBlizzies(HashSet<(Point, int)> blizzards, HashSet<Point> walls)
-    {
-        for (int r = 0; r <= walls.Max(p => p.Y); r++)
-        {
-            for (int c = 0; c <= walls.Max(p => p.X); c++)
-            {
-                Console.Write(walls.Contains((c, r)) ? '#' : '.');
-            }
-            Console.WriteLine();
-        }
-
-        foreach (var bliz in blizzards)
-        {
-            Console.SetCursorPosition(bliz.Item1.X, bliz.Item1.Y);
-            Console.Write(bliz.Item2 switch
-            {
-                0 => '^',
-                1 => '>',
-                2 => 'v',
-                _ => '<'
-            });
-        }
-
-        foreach (var bliz in blizzards.Select(p => p.Item1).GroupBy(p => p).Where(g => g.Count() > 1))
-        {
-            Console.SetCursorPosition(bliz.Key.X, bliz.Key.Y);
-            Console.Write(bliz.Count());
-        }
-
-        
     }
 
     public string SolvePart2(string input)
