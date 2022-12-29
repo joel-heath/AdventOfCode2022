@@ -63,14 +63,12 @@ internal class Day23 : IDay
     {
         Point[] elves = ParseInput(input);
         Point?[] propositions = elves; // temp value
+        int roundCount;
 
-        int roundCount = 0;
-        while (propositions.Any(p => p is not null))
+        for (roundCount = 0; propositions.Any(p => p is not null); roundCount++)
         {
             propositions = elves.Select(e => ConsiderMove(e, elves, roundCount)).ToArray();
             elves = elves.Select((e, j) => propositions.Count(p => p != null && p == propositions[j]) == 1 ? propositions[j]! : e).ToArray();
-            roundCount++;
-            Console.WriteLine(roundCount);
         }
 
         return $"{roundCount}";
